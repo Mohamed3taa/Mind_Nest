@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}{{ note.title }} — Mind Nest{% endblock %}
+{% block nav_notes %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="page-header">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'notes:note_list' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+            <h1 class="page-title mb-0">{{ note.title }}</h1>
+            {% if note.is_pinned %}
+            <i class="bi bi-pin-fill text-warning fs-5" title="Pinned"></i>
+            {% endif %}
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#editNoteModal">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </button>
+            <button class="btn btn-outline-danger btn-sm"
+                    data-bs-toggle="modal" data-bs-target="#deleteNoteModal">
+                <i class="bi bi-trash me-1"></i>Delete
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-9">
+            <div class="card p-4">
+                <!-- Meta -->
+                <div class="d-flex flex-wrap gap-3 mb-4 text-muted small">
+                    {% if note.category %}
+                    <span>
+                        <span class="cat-dot me-1" style="background:{{ note.category.color }}"></span>
+                        {{ note.category.name }}
+                    </span>
+                    {% endif %}
+                    <span><i class="bi bi-clock me-1"></i>{{ note.updated_at|date:"M d, Y — H:i" }}</span>
+                    <span><i class="bi bi-calendar3 me-1"></i>Created {{ note.created_at|timesince }} ago</span>
+                </div>
+
+                <!-- Content -->
+                <div class="note-body" style="white-space: pre-wrap; line-height: 1.8;">{{ note.content }}</div>
+
+                <!-- Tags -->
+                {% if note.tags.all %}
+                <div class="mt-4 pt-3 border-top">
+                    {% for tag in note.tags.all %}
+                    <a href="{% url 'notes:note_list' %}?tag={{ tag.name }}"
+                       class="badge bg-secondary rounded-pill me-1 text-decoration-none">#{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h6 class="fw-semibold mb-3">Note Info</h6>
+                <div class="text-muted small">
+                    <p><i class="bi bi-person me-2"></i>{{ note.user.get_full_name|default:note.user.username }}</p>
+                    <p><i class="bi bi-calendar3 me-2"></i>{{ note.created_at|date:"M d, Y" }}</p>
+                    <p><i class="bi bi-pencil me-2"></i>{{ note.updated_at|date:"M d, Y" }}</p>
+                    <p class="mb-0"><i class="bi bi-tag me-2"></i>{{ note.tags.count }} tag(s)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'notes:note_edit' note.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" value="{{ note.title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea name="content" class="form-control" rows="10">{{ note.content }}</textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="">No Category</option>
+                                {% for cat in note.user.categories.all %}
+                                <option value="{{ cat.pk }}" {% if note.category == cat %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Tags</label>
+                            <input type="text" name="tags_input" class="form-control"
+                                   value="{% for t in note.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger"><i class="bi bi-trash me-2"></i>Delete Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">Delete <strong>{{ note.title }}</strong>?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'notes:note_delete' note.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -16,7 +16,7 @@
     <!-- Status Tabs -->
     <div class="d-flex gap-2 mb-3 flex-wrap">
         <a href="{% url 'planner:task_list' %}"
-           class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-secondary{% %}">
+           class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">
             All <span class="badge bg-white text-dark ms-1">{{ all_count }}</span>
         </a>
         <a href="?status=todo"

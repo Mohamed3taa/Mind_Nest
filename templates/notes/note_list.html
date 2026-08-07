@@ -1,11 +1,329 @@
 {% extends 'base.html' %}
 {% block title %}Notes — Mind Nest{% endblock %}
 {% block nav_notes %}active{% endblock %}
+
 {% block content %}
 <div class="container-fluid">
+
+    <!-- Header -->
     <div class="page-header">
         <h1 class="page-title"><i class="bi bi-journal-text me-2"></i>Notes</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                <i class="bi bi-tag me-1"></i>New Category
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                <i class="bi bi-plus-lg me-1"></i>New Note
+            </button>
+        </div>
     </div>
-    <p class="text-muted">Notes coming soon...</p>
+
+    <div class="row g-4">
+
+        <!-- Sidebar: Categories & Tags -->
+        <div class="col-md-3">
+            <!-- Search -->
+            <div class="card p-3 mb-3">
+                <form method="get">
+                    <input type="text" name="search" class="form-control"
+                           placeholder="&#128269; Search notes..." value="{{ current_search }}" id="noteSearch">
+                </form>
+            </div>
+
+            <!-- Categories -->
+            <div class="card p-3 mb-3">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-grid me-2"></i>Categories</h6>
+                <a href="{% url 'notes:note_list' %}"
+                   class="d-flex justify-content-between align-items-center p-2 rounded mb-1 text-decoration-none
+                   {% if not current_cat %}cat-active{% else %}cat-link{% endif %}">
+                    <span>All Notes</span>
+                    <span class="badge bg-secondary">{{ notes.count }}</span>
+                </a>
+                {% for cat in categories %}
+                <div class="d-flex align-items-center justify-content-between p-2 rounded mb-1 cat-item">
+                    <a href="?category={{ cat.pk }}"
+                       class="d-flex align-items-center gap-2 text-decoration-none flex-grow-1
+                       {% if current_cat == cat.pk|stringformat:'s' %}fw-bold{% endif %}">
+                        <span class="cat-dot" style="background:{{ cat.color }}"></span>
+                        <span>{{ cat.name }}</span>
+                        <span class="badge bg-secondary ms-auto">{{ cat.notes.count }}</span>
+                    </a>
+                    <form method="post" action="{% url 'notes:category_delete' cat.pk %}" class="ms-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link btn-sm p-0 text-danger"
+                                onclick="return confirm('Delete category?')">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Tags -->
+            {% if tags %}
+            <div class="card p-3">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-tags me-2"></i>Tags</h6>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for tag in tags %}
+                    <a href="?tag={{ tag.name }}"
+                       class="badge rounded-pill text-decoration-none
+                       {% if current_tag == tag.name %}bg-primary{% else %}bg-secondary{% endif %}">
+                        #{{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Notes Grid -->
+        <div class="col-md-9">
+            {% if notes %}
+            <div class="row g-3" id="notesGrid">
+                {% for note in notes %}
+                <div class="col-md-6 col-lg-4 note-item">
+                    <div class="card note-card h-100"
+                         style="border-top: 3px solid {{ note.category.color|default:'#89b4fa' }}">
+                        <div class="card-body d-flex flex-column">
+                            <!-- Header -->
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-semibold mb-0 note-title">{{ note.title }}</h6>
+                                <div class="d-flex gap-1">
+                                    <form method="post" action="{% url 'notes:note_toggle_pin' note.pk %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-link btn-sm p-0"
+                                                title="{% if note.is_pinned %}Unpin{% else %}Pin{% endif %}">
+                                            <i class="bi bi-pin{% if note.is_pinned %}-fill text-warning{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Content preview -->
+                            <p class="text-muted small flex-grow-1 note-content">
+                                {{ note.content|truncatechars:120 }}
+                            </p>
+
+                            <!-- Tags -->
+                            {% if note.tags.all %}
+                            <div class="mb-2">
+                                {% for tag in note.tags.all %}
+                                <span class="badge bg-secondary rounded-pill me-1">#{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Footer -->
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                                <div class="text-muted" style="font-size:0.75rem">
+                                    {% if note.category %}
+                                    <span class="cat-dot me-1" style="background:{{ note.category.color }}"></span>
+                                    {{ note.category.name }} ·
+                                    {% endif %}
+                                    {{ note.updated_at|timesince }} ago
+                                </div>
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'notes:note_detail' note.pk %}"
+                                       class="btn btn-sm btn-outline-secondary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-primary" title="Edit"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editNoteModal{{ note.pk }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteNoteModal{{ note.pk }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editNoteModal{{ note.pk }}" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Note</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form method="post" action="{% url 'notes:note_edit' note.pk %}">
+                                {% csrf_token %}
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Title</label>
+                                        <input type="text" name="title" class="form-control"
+                                               value="{{ note.title }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Content</label>
+                                        <textarea name="content" class="form-control"
+                                                  rows="8">{{ note.content }}</textarea>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <label class="form-label">Category</label>
+                                            <select name="category" class="form-select">
+                                                <option value="">No Category</option>
+                                                {% for cat in categories %}
+                                                <option value="{{ cat.pk }}"
+                                                    {% if note.category == cat %}selected{% endif %}>
+                                                    {{ cat.name }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label">Tags (comma separated)</label>
+                                            <input type="text" name="tags_input" class="form-control"
+                                                   value="{% for t in note.tags.all %}{{ t.name }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                                        </div>
+                                    </div>
+                                    <div class="form-check mt-3">
+                                        <input type="checkbox" name="is_pinned" class="form-check-input"
+                                               id="pin{{ note.pk }}" {% if note.is_pinned %}checked{% endif %}>
+                                        <label class="form-check-label" for="pin{{ note.pk }}">Pin this note</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delete Modal -->
+                <div class="modal fade" id="deleteNoteModal{{ note.pk }}" tabindex="-1">
+                    <div class="modal-dialog modal-sm">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-danger"><i class="bi bi-trash me-2"></i>Delete Note</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                Delete <strong>{{ note.title }}</strong>?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                <form method="post" action="{% url 'notes:note_delete' note.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card p-5 text-center text-muted">
+                <i class="bi bi-journal-plus fs-1 d-block mb-3"></i>
+                <h5>No notes found</h5>
+                <p>Click "New Note" to get started!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
+
+<!-- Add Note Modal -->
+<div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-journal-plus me-2"></i>New Note</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'notes:note_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Title <span class="text-danger">*</span></label>
+                        <input type="text" name="title" class="form-control" placeholder="Note title..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea name="content" class="form-control" rows="8"
+                                  placeholder="Write your note here..."></textarea>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="">No Category</option>
+                                {% for cat in categories %}
+                                <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Tags (comma separated)</label>
+                            <input type="text" name="tags_input" class="form-control"
+                                   placeholder="python, django, notes...">
+                        </div>
+                    </div>
+                    <div class="form-check mt-3">
+                        <input type="checkbox" name="is_pinned" class="form-check-input" id="pinNew">
+                        <label class="form-check-label" for="pinNew">Pin this note</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Note</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-tag me-2"></i>New Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'notes:category_create' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="Category name..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Color</label>
+                        <input type="color" name="color" class="form-control form-control-color w-100" value="#89b4fa">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live search
+document.getElementById('noteSearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('.note-item').forEach(function(item) {
+        const title   = item.querySelector('.note-title').textContent.toLowerCase();
+        const content = item.querySelector('.note-content').textContent.toLowerCase();
+        item.style.display = (title.includes(q) || content.includes(q)) ? '' : 'none';
+    });
+});
+</script>
 {% endblock %}
