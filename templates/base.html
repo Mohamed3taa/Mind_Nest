@@ -25,8 +25,13 @@
     <!-- Sidebar -->
     <nav id="sidebar" class="sidebar">
         <div class="sidebar-brand">
-            <i class="bi bi-brain"></i>
-            <span>Mind Nest</span>
+            <div class="sidebar-brand-logo">
+                <i class="bi bi-braces-asterisk"></i>
+            </div>
+            <div class="sidebar-brand-text">
+                <span class="sidebar-brand-name">Mind Nest</span>
+                <span class="sidebar-brand-tagline">AI Study Hub</span>
+            </div>
         </div>
 
         <ul class="sidebar-nav">
@@ -82,14 +87,19 @@
                 <button class="btn btn-link" id="darkModeToggle" title="Toggle Dark Mode">
                     <i class="bi bi-moon-stars" id="darkModeIcon"></i>
                 </button>
-                <!-- User Avatar -->
-                <a href="{% url 'accounts:profile' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <!-- User Pill -->
+                <a href="{% url 'accounts:profile' %}" class="user-pill text-decoration-none ms-2">
                     {% if user.profile.avatar %}
-                        <img src="{{ user.profile.avatar.url }}" class="rounded-circle" width="36" height="36" style="object-fit:cover;" alt="avatar">
+                        <img src="{{ user.profile.avatar.url }}" class="rounded-circle"
+                             width="28" height="28" style="object-fit:cover;" alt="avatar">
                     {% else %}
-                        <div class="avatar-placeholder rounded-circle">{{ user.username|first|upper }}</div>
+                        <div class="avatar-placeholder" style="width:28px;height:28px;font-size:0.75rem;">
+                            {{ user.username|first|upper }}
+                        </div>
                     {% endif %}
-                    <span class="d-none d-md-inline fw-medium">{{ user.get_full_name|default:user.username }}</span>
+                    <span class="user-pill-name d-none d-md-inline">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
                 </a>
             </div>
         </nav>
