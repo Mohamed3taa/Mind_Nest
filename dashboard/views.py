@@ -1,3 +1,10 @@
+"""
+dashboard/views.py
+------------------
+Main dashboard view that aggregates data from all apps
+and passes it to the template including chart data.
+"""
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -10,9 +17,17 @@ import json
 
 @login_required
 def index(request):
+    """
+    Dashboard home page.
+    Collects:
+    - Summary stats (tasks, notes, resources, AI chats)
+    - Recent activity (last 5 of each)
+    - Upcoming tasks (due within 7 days)
+    - Chart data (priority, status, content overview) as JSON for Chart.js
+    """
     user = request.user
 
-    # --- Stats ---
+    # ── Summary Stats ──────────────────────────────────────────────
     total_tasks     = Task.objects.filter(user=user).count()
     completed_tasks = Task.objects.filter(user=user, is_completed=True).count()
     pending_tasks   = total_tasks - completed_tasks
@@ -20,12 +35,12 @@ def index(request):
     total_resources = Resource.objects.filter(user=user).count()
     total_ai_chats  = AIConversation.objects.filter(user=user).count()
 
-    # --- Recent items ---
+    # ── Recent Items ───────────────────────────────────────────────
     recent_tasks     = Task.objects.filter(user=user).order_by('-created_at')[:5]
     recent_notes     = Note.objects.filter(user=user).order_by('-updated_at')[:5]
     recent_resources = Resource.objects.filter(user=user).order_by('-created_at')[:4]
 
-    # --- Upcoming tasks (due in next 7 days, not completed) ---
+    # ── Upcoming Tasks (next 7 days, not completed) ────────────────
     today     = timezone.now().date()
     next_week = today + timezone.timedelta(days=7)
     upcoming_tasks = Task.objects.filter(
@@ -34,10 +49,10 @@ def index(request):
         due_date__range=[today, next_week]
     ).order_by('due_date')[:5]
 
-    # --- Task completion percentage ---
+    # ── Task completion percentage ─────────────────────────────────
     completion_pct = round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
 
-    # --- Chart data: Tasks by priority ---
+    # ── Chart Data (serialized as JSON for Chart.js) ───────────────
     priority_data = {
         'labels': ['High', 'Medium', 'Low'],
         'data': [
@@ -48,7 +63,6 @@ def index(request):
         'colors': ['#ef4444', '#f59e0b', '#22c55e']
     }
 
-    # --- Chart data: Tasks by status ---
     status_data = {
         'labels': ['To Do', 'In Progress', 'Done'],
         'data': [
@@ -59,7 +73,6 @@ def index(request):
         'colors': ['#94a3b8', '#f59e0b', '#22c55e']
     }
 
-    # --- Chart data: Content overview ---
     overview_data = {
         'labels': ['Tasks', 'Notes', 'Resources', 'AI Chats'],
         'data': [total_tasks, total_notes, total_resources, total_ai_chats],
@@ -67,20 +80,20 @@ def index(request):
     }
 
     context = {
-        'total_tasks':     total_tasks,
-        'completed_tasks': completed_tasks,
-        'pending_tasks':   pending_tasks,
-        'total_notes':     total_notes,
-        'total_resources': total_resources,
-        'total_ai_chats':  total_ai_chats,
-        'recent_tasks':    recent_tasks,
-        'recent_notes':    recent_notes,
+        'total_tasks':      total_tasks,
+        'completed_tasks':  completed_tasks,
+        'pending_tasks':    pending_tasks,
+        'total_notes':      total_notes,
+        'total_resources':  total_resources,
+        'total_ai_chats':   total_ai_chats,
+        'recent_tasks':     recent_tasks,
+        'recent_notes':     recent_notes,
         'recent_resources': recent_resources,
-        'upcoming_tasks':  upcoming_tasks,
-        'completion_pct':  completion_pct,
-        'today':           today,
-        'priority_data':   json.dumps(priority_data),
-        'status_data':     json.dumps(status_data),
-        'overview_data':   json.dumps(overview_data),
+        'upcoming_tasks':   upcoming_tasks,
+        'completion_pct':   completion_pct,
+        'today':            today,
+        'priority_data':    json.dumps(priority_data),
+        'status_data':      json.dumps(status_data),
+        'overview_data':    json.dumps(overview_data),
     }
     return render(request, 'dashboard/index.html', context)
