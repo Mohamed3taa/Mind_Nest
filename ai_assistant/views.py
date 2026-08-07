@@ -1,4 +1,7 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from google import genai
 from google.genai import types
 from django.shortcuts import render, redirect, get_object_or_404
@@ -39,6 +42,7 @@ def get_gemini_response(conversation_history, user_message):
         )
         return response.text
     except Exception as e:
+        print(f"[AI ERROR] {type(e).__name__}: {e}")
         return f"Sorry, I encountered an error: {str(e)}"
 
 
@@ -84,11 +88,13 @@ def send_message(request, conv_id):
     # Save user message
     AIMessage.objects.create(conversation=conv, role='user', content=user_msg)
 
-    # Get conversation history (last 10 messages for context)
-    history = conv.messages.all().order_by('created_at')[:-1][:10]
+    # Get conversation history (all messages except the one just saved, last 10 for context)
+    history = list(conv.messages.all().order_by('created_at'))
+    # exclude last message (the one just saved) to avoid duplication
+    history = history[:-1][-10:]
 
     # Get AI response
-    ai_response = get_gemini_response(list(history), user_msg)
+    ai_response = get_gemini_response(history, user_msg)
 
     # Save AI message
     ai_msg = AIMessage.objects.create(conversation=conv, role='assistant', content=ai_response)
