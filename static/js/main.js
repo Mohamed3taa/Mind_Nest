@@ -5,10 +5,10 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     // ---- Dark Mode ----
-    const html         = document.documentElement;
-    const darkBtn      = document.getElementById('darkModeToggle');
-    const darkIcon     = document.getElementById('darkModeIcon');
-    const savedTheme   = localStorage.getItem('theme') || 'light';
+    const html       = document.documentElement;
+    const darkBtn    = document.getElementById('darkModeToggle');
+    const darkIcon   = document.getElementById('darkModeIcon');
+    const savedTheme = localStorage.getItem('theme') || 'light';
 
     html.setAttribute('data-bs-theme', savedTheme);
     updateDarkIcon(savedTheme);
@@ -32,19 +32,37 @@ document.addEventListener('DOMContentLoaded', function () {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar       = document.getElementById('sidebar');
 
+    // Add overlay element
+    let overlay = document.getElementById('sidebarOverlay');
+    if (!overlay && sidebar) {
+        overlay = document.createElement('div');
+        overlay.id = 'sidebarOverlay';
+        document.body.appendChild(overlay);
+    }
+
     if (sidebarToggle && sidebar) {
         sidebarToggle.addEventListener('click', function () {
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
             } else {
                 sidebar.classList.toggle('collapsed');
+                document.getElementById('page-content').style.marginLeft =
+                    sidebar.classList.contains('collapsed') ? '0' : '';
             }
         });
     }
 
+    // Close sidebar on overlay click (mobile)
+    if (overlay) {
+        overlay.addEventListener('click', function () {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        });
+    }
+
     // ---- Auto-dismiss alerts after 4s ----
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function (alert) {
+    document.querySelectorAll('.alert').forEach(function (alert) {
         setTimeout(function () {
             const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
             bsAlert.close();
@@ -54,7 +72,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // ---- Active sidebar link ----
     const currentPath = window.location.pathname;
     document.querySelectorAll('.sidebar-link').forEach(function (link) {
-        if (link.getAttribute('href') === currentPath) {
+        const href = link.getAttribute('href');
+        if (href && currentPath.startsWith(href) && href !== '/') {
             link.classList.add('active');
         }
     });

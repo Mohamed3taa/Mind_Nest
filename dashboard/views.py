@@ -5,6 +5,7 @@ from planner.models import Task
 from notes.models import Note
 from resources.models import Resource
 from ai_assistant.models import AIConversation
+import json
 
 
 @login_required
@@ -36,6 +37,35 @@ def index(request):
     # --- Task completion percentage ---
     completion_pct = round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0)
 
+    # --- Chart data: Tasks by priority ---
+    priority_data = {
+        'labels': ['High', 'Medium', 'Low'],
+        'data': [
+            Task.objects.filter(user=user, priority='high').count(),
+            Task.objects.filter(user=user, priority='medium').count(),
+            Task.objects.filter(user=user, priority='low').count(),
+        ],
+        'colors': ['#ef4444', '#f59e0b', '#22c55e']
+    }
+
+    # --- Chart data: Tasks by status ---
+    status_data = {
+        'labels': ['To Do', 'In Progress', 'Done'],
+        'data': [
+            Task.objects.filter(user=user, status='todo').count(),
+            Task.objects.filter(user=user, status='in_progress').count(),
+            Task.objects.filter(user=user, status='done').count(),
+        ],
+        'colors': ['#94a3b8', '#f59e0b', '#22c55e']
+    }
+
+    # --- Chart data: Content overview ---
+    overview_data = {
+        'labels': ['Tasks', 'Notes', 'Resources', 'AI Chats'],
+        'data': [total_tasks, total_notes, total_resources, total_ai_chats],
+        'colors': ['#89b4fa', '#cba6f7', '#a6e3a1', '#f9e2af']
+    }
+
     context = {
         'total_tasks':     total_tasks,
         'completed_tasks': completed_tasks,
@@ -49,5 +79,8 @@ def index(request):
         'upcoming_tasks':  upcoming_tasks,
         'completion_pct':  completion_pct,
         'today':           today,
+        'priority_data':   json.dumps(priority_data),
+        'status_data':     json.dumps(status_data),
+        'overview_data':   json.dumps(overview_data),
     }
     return render(request, 'dashboard/index.html', context)

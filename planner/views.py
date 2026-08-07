@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 from .models import Task
 from .forms import TaskForm
 
@@ -21,6 +22,11 @@ def task_list(request):
         tasks = tasks.filter(status=status)
     if search:
         tasks = tasks.filter(title__icontains=search)
+
+    # Pagination
+    paginator = Paginator(tasks, 8)
+    page      = request.GET.get('page', 1)
+    tasks     = paginator.get_page(page)
 
     # Counts for tabs
     all_count       = Task.objects.filter(user=request.user).count()

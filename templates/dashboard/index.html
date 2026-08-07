@@ -64,6 +64,31 @@
         </div>
     </div>
 
+    <!-- Charts Row -->
+    <div class="row g-3 mb-4">
+        <!-- Tasks by Priority -->
+        <div class="col-md-4">
+            <div class="card p-4">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-pie-chart me-2"></i>Tasks by Priority</h6>
+                <canvas id="priorityChart" height="200"></canvas>
+            </div>
+        </div>
+        <!-- Tasks by Status -->
+        <div class="col-md-4">
+            <div class="card p-4">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart me-2"></i>Tasks by Status</h6>
+                <canvas id="statusChart" height="200"></canvas>
+            </div>
+        </div>
+        <!-- Content Overview -->
+        <div class="col-md-4">
+            <div class="card p-4">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-donut-chart me-2"></i>Content Overview</h6>
+                <canvas id="overviewChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- Progress + Upcoming -->
     <div class="row g-3 mb-4">
         <!-- Task Progress -->
@@ -214,4 +239,58 @@
     </div>
 
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+const priorityData = {{ priority_data|safe }};
+const statusData   = {{ status_data|safe }};
+const overviewData = {{ overview_data|safe }};
+
+const chartDefaults = {
+    plugins: { legend: { position: 'bottom', labels: { padding: 12, font: { size: 11 } } } },
+    responsive: true,
+    maintainAspectRatio: true,
+};
+
+new Chart(document.getElementById('priorityChart'), {
+    type: 'doughnut',
+    data: {
+        labels: priorityData.labels,
+        datasets: [{ data: priorityData.data, backgroundColor: priorityData.colors, borderWidth: 0 }]
+    },
+    options: { ...chartDefaults, cutout: '65%' }
+});
+
+new Chart(document.getElementById('statusChart'), {
+    type: 'bar',
+    data: {
+        labels: statusData.labels,
+        datasets: [{
+            data: statusData.data,
+            backgroundColor: statusData.colors,
+            borderRadius: 8,
+            borderWidth: 0
+        }]
+    },
+    options: {
+        ...chartDefaults,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(128,128,128,0.1)' } },
+            x: { grid: { display: false } }
+        }
+    }
+});
+
+new Chart(document.getElementById('overviewChart'), {
+    type: 'doughnut',
+    data: {
+        labels: overviewData.labels,
+        datasets: [{ data: overviewData.data, backgroundColor: overviewData.colors, borderWidth: 0 }]
+    },
+    options: { ...chartDefaults, cutout: '65%' }
+});
+</script>
 {% endblock %}

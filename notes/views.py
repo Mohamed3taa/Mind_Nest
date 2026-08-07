@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import Note, Category, Tag
 from .forms import NoteForm, CategoryForm
 
@@ -32,6 +33,11 @@ def note_list(request):
         notes = notes.distinct()
     if tag_name:
         notes = notes.filter(tags__name=tag_name)
+
+    # Pagination
+    paginator = Paginator(notes, 9)
+    page      = request.GET.get('page', 1)
+    notes     = paginator.get_page(page)
 
     categories = Category.objects.filter(user=request.user)
     tags       = Tag.objects.filter(user=request.user)

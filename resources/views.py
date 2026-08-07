@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 from .models import Resource, ResourceType
 from .forms import ResourceForm
 
@@ -23,6 +24,11 @@ def resource_list(request):
         resources = resources.distinct()
     if favorite:
         resources = resources.filter(is_favorite=True)
+
+    # Pagination
+    paginator = Paginator(resources, 9)
+    page      = request.GET.get('page', 1)
+    resources = paginator.get_page(page)
 
     resource_types = ResourceType.objects.all()
     form           = ResourceForm()
