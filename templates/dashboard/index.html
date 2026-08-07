@@ -1,17 +1,217 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Dashboard — Mind Nest{% endblock %}
 {% block nav_dashboard %}active{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
+
+    <!-- Page Header -->
     <div class="page-header">
-        <h1 class="page-title">
-            <i class="bi bi-grid-1x2 me-2"></i>Dashboard
-        </h1>
-        <span class="text-muted">Welcome back, {{ user.first_name|default:user.username }}! 👋</span>
+        <div>
+            <h1 class="page-title"><i class="bi bi-grid-1x2 me-2"></i>Dashboard</h1>
+            <p class="text-muted mb-0">Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>! 👋</p>
+        </div>
+        <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ today }}</span>
     </div>
 
-    <p class="text-muted">Dashboard content coming soon...</p>
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(137,180,250,0.15)">
+                    <i class="bi bi-check2-square text-primary"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ total_tasks }}</div>
+                    <div class="stat-label">Total Tasks</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(203,166,247,0.15)">
+                    <i class="bi bi-journal-text" style="color:#cba6f7"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ total_notes }}</div>
+                    <div class="stat-label">Total Notes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(166,227,161,0.15)">
+                    <i class="bi bi-folder2-open" style="color:#a6e3a1"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ total_resources }}</div>
+                    <div class="stat-label">Resources</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:rgba(249,226,175,0.15)">
+                    <i class="bi bi-robot" style="color:#f9e2af"></i>
+                </div>
+                <div>
+                    <div class="stat-value">{{ total_ai_chats }}</div>
+                    <div class="stat-label">AI Chats</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress + Upcoming -->
+    <div class="row g-3 mb-4">
+        <!-- Task Progress -->
+        <div class="col-md-4">
+            <div class="card p-4 h-100">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart me-2"></i>Task Progress</h6>
+                <div class="text-center my-3">
+                    <div class="position-relative d-inline-block">
+                        <svg width="120" height="120" viewBox="0 0 120 120">
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/>
+                            <circle cx="60" cy="60" r="50" fill="none" stroke="#89b4fa" stroke-width="10"
+                                stroke-dasharray="{{ completion_pct|floatformat:0 }} 100"
+                                stroke-dasharray="{% widthratio completion_pct 100 314 %} 314"
+                                stroke-linecap="round"
+                                transform="rotate(-90 60 60)"/>
+                        </svg>
+                        <div class="position-absolute top-50 start-50 translate-middle text-center">
+                            <div class="fw-bold fs-4">{{ completion_pct }}%</div>
+                            <div class="text-muted" style="font-size:0.7rem">Done</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-around text-center mt-2">
+                    <div>
+                        <div class="fw-bold text-success">{{ completed_tasks }}</div>
+                        <div class="text-muted small">Completed</div>
+                    </div>
+                    <div>
+                        <div class="fw-bold text-warning">{{ pending_tasks }}</div>
+                        <div class="text-muted small">Pending</div>
+                    </div>
+                    <div>
+                        <div class="fw-bold">{{ total_tasks }}</div>
+                        <div class="text-muted small">Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Tasks -->
+        <div class="col-md-8">
+            <div class="card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-semibold mb-0"><i class="bi bi-clock me-2"></i>Upcoming Tasks</h6>
+                    <a href="{% url 'planner:task_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                {% if upcoming_tasks %}
+                    <div class="list-group list-group-flush">
+                        {% for task in upcoming_tasks %}
+                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-medium">{{ task.title }}</span>
+                                <div class="text-muted small">
+                                    <i class="bi bi-calendar3 me-1"></i>{{ task.due_date }}
+                                </div>
+                            </div>
+                            <span class="badge badge-{{ task.priority }} rounded-pill px-3">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-calendar-check fs-2 d-block mb-2"></i>
+                        No upcoming tasks this week!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Notes + Resources -->
+    <div class="row g-3">
+        <!-- Recent Notes -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-semibold mb-0"><i class="bi bi-journal-text me-2"></i>Recent Notes</h6>
+                    <a href="{% url 'notes:note_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                {% if recent_notes %}
+                    <div class="list-group list-group-flush">
+                        {% for note in recent_notes %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-medium">{{ note.title }}</span>
+                                {% if note.is_pinned %}
+                                    <i class="bi bi-pin-fill text-warning"></i>
+                                {% endif %}
+                            </div>
+                            <div class="text-muted small">
+                                {% if note.category %}
+                                    <span class="badge rounded-pill px-2"
+                                          style="background:{{ note.category.color }}20; color:{{ note.category.color }}">
+                                        {{ note.category.name }}
+                                    </span>
+                                {% endif %}
+                                {{ note.updated_at|timesince }} ago
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-journal-plus fs-2 d-block mb-2"></i>
+                        No notes yet. <a href="{% url 'notes:note_list' %}">Create one!</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Resources -->
+        <div class="col-md-6">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-semibold mb-0"><i class="bi bi-folder2-open me-2"></i>Recent Resources</h6>
+                    <a href="{% url 'resources:resource_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                {% if recent_resources %}
+                    <div class="list-group list-group-flush">
+                        {% for res in recent_resources %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="fw-medium">{{ res.title }}</span>
+                                    <div class="text-muted small">
+                                        {% if res.resource_type %}
+                                            <i class="{{ res.resource_type.icon }} me-1"></i>{{ res.resource_type.name }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <a href="{{ res.link }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-folder-plus fs-2 d-block mb-2"></i>
+                        No resources yet. <a href="{% url 'resources:resource_list' %}">Add one!</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
