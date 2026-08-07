@@ -79,7 +79,7 @@ Mind_Nest/
 ## Team
 
 - Mohamed Ataa
-- [Partner Name]
+- Sarah Yasser
 
 ## License
 
