@@ -231,3 +231,15 @@ body {
     .sidebar.open { transform: translateX(0); }
     #page-content { margin-left: 0; }
 }
+
+/* ---- Task Cards ---- */
+.task-card {
+    transition: transform 0.15s, box-shadow 0.15s;
+    border-left: 4px solid transparent;
+}
+.task-card:hover { transform: translateX(3px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+/* priority left border */
+.task-card:has(.badge-high)    { border-left-color: #ef4444; }
+.task-card:has(.badge-medium)  { border-left-color: #f59e0b; }
+.task-card:has(.badge-low)     { border-left-color: #22c55e; }
