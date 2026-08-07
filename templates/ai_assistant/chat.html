@@ -1,11 +1,258 @@
 {% extends 'base.html' %}
 {% block title %}AI Assistant — Mind Nest{% endblock %}
 {% block nav_ai %}active{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid h-100">
     <div class="page-header">
         <h1 class="page-title"><i class="bi bi-robot me-2"></i>AI Assistant</h1>
     </div>
-    <p class="text-muted">AI chat coming soon...</p>
+
+    <div class="row g-3" style="height: calc(100vh - 180px);">
+
+        <!-- Conversations Sidebar -->
+        <div class="col-md-3 d-flex flex-column">
+            <div class="card flex-grow-1 d-flex flex-column overflow-hidden">
+                <div class="card-body p-0 d-flex flex-column">
+                    <!-- New Chat Button -->
+                    <div class="p-3 border-bottom">
+                        <form method="post" action="{% url 'ai_assistant:new_conversation' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="title" value="New Conversation">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-lg me-2"></i>New Chat
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Conversation List -->
+                    <div class="overflow-auto flex-grow-1 p-2">
+                        {% if conversations %}
+                            {% for conv in conversations %}
+                            <div class="d-flex align-items-center gap-1 mb-1">
+                                <a href="?conv={{ conv.pk }}"
+                                   class="conv-item flex-grow-1 p-2 rounded text-decoration-none
+                                   {% if active_conv.pk == conv.pk %}conv-active{% endif %}">
+                                    <div class="conv-title small fw-medium">{{ conv.title|truncatechars:28 }}</div>
+                                    <div class="text-muted" style="font-size:0.7rem">
+                                        {{ conv.updated_at|timesince }} ago
+                                    </div>
+                                </a>
+                                <form method="post" action="{% url 'ai_assistant:delete_conversation' conv.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link btn-sm p-1 text-danger"
+                                            onclick="return confirm('Delete this conversation?')">
+                                        <i class="bi bi-trash" style="font-size:0.75rem"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center text-muted p-4 small">
+                                No conversations yet.<br>Start a new chat!
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="col-md-9 d-flex flex-column">
+            <div class="card flex-grow-1 d-flex flex-column overflow-hidden">
+                {% if active_conv %}
+                <!-- Chat Header -->
+                <div class="card-header d-flex align-items-center gap-2 py-2">
+                    <div class="ai-avatar">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div>
+                        <div class="fw-semibold small">{{ active_conv.title }}</div>
+                        <div class="text-muted" style="font-size:0.72rem">Mind Nest AI • Powered by Gemini</div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="flex-grow-1 overflow-auto p-3" id="chatMessages">
+                    {% if messages_list %}
+                        {% for msg in messages_list %}
+                        <div class="chat-msg {% if msg.role == 'user' %}chat-user{% else %}chat-ai{% endif %} mb-3">
+                            <div class="chat-bubble">
+                                {% if msg.role == 'assistant' %}
+                                <div class="chat-bubble-header">
+                                    <i class="bi bi-robot me-1"></i>Mind Nest AI
+                                </div>
+                                {% endif %}
+                                <div class="chat-text">{{ msg.content|linebreaksbr }}</div>
+                                <div class="chat-time">{{ msg.created_at|date:"H:i" }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-chat-dots fs-1 d-block mb-3"></i>
+                            <p>Start the conversation! Ask me anything about your studies.</p>
+                            <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    Explain a concept
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    Generate quiz questions
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    Summarize my notes
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    Help with Python code
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <!-- Typing indicator -->
+                    <div id="typingIndicator" class="chat-msg chat-ai mb-3" style="display:none">
+                        <div class="chat-bubble">
+                            <div class="typing-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input -->
+                <div class="card-footer p-3">
+                    <form id="chatForm" class="d-flex gap-2">
+                        {% csrf_token %}
+                        <textarea id="messageInput" class="form-control" rows="1"
+                                  placeholder="Ask anything... (Shift+Enter for new line)"
+                                  style="resize:none; max-height:120px;"></textarea>
+                        <button type="submit" class="btn btn-primary px-3" id="sendBtn">
+                            <i class="bi bi-send-fill"></i>
+                        </button>
+                    </form>
+                </div>
+
+                {% else %}
+                <!-- No conversation selected -->
+                <div class="flex-grow-1 d-flex align-items-center justify-content-center text-center text-muted p-4">
+                    <div>
+                        <i class="bi bi-robot fs-1 d-block mb-3 text-primary"></i>
+                        <h5>Mind Nest AI Assistant</h5>
+                        <p>Select a conversation or start a new one.</p>
+                        <form method="post" action="{% url 'ai_assistant:new_conversation' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="title" value="New Conversation">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-plus-lg me-2"></i>Start New Chat
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if active_conv %}
+<script>
+const convId   = {{ active_conv.pk }};
+const csrfToken = '{{ csrf_token }}';
+const chatMessages = document.getElementById('chatMessages');
+const messageInput = document.getElementById('messageInput');
+const sendBtn      = document.getElementById('sendBtn');
+const typingIndicator = document.getElementById('typingIndicator');
+
+// Scroll to bottom
+function scrollToBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+scrollToBottom();
+
+// Auto-resize textarea
+messageInput.addEventListener('input', function () {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
+
+// Suggestion buttons
+document.querySelectorAll('.suggestion-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        messageInput.value = this.textContent.trim();
+        messageInput.dispatchEvent(new Event('input'));
+        messageInput.focus();
+    });
+});
+
+// Send on Enter (not Shift+Enter)
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+document.getElementById('chatForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    sendMessage();
+});
+
+function addMessage(role, content) {
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role === 'user' ? 'chat-user' : 'chat-ai'} mb-3`;
+
+    const now = new Date();
+    const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    div.innerHTML = `
+        <div class="chat-bubble">
+            ${role === 'assistant' ? '<div class="chat-bubble-header"><i class="bi bi-robot me-1"></i>Mind Nest AI</div>' : ''}
+            <div class="chat-text">${content.replace(/\n/g, '<br>')}</div>
+            <div class="chat-time">${time}</div>
+        </div>`;
+    chatMessages.insertBefore(div, typingIndicator);
+    scrollToBottom();
+}
+
+function sendMessage() {
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+
+    // Add user message to UI
+    addMessage('user', msg);
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    // Show typing indicator
+    typingIndicator.style.display = 'flex';
+    scrollToBottom();
+
+    fetch(`/ai/${convId}/send/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ message: msg })
+    })
+    .then(r => r.json())
+    .then(data => {
+        typingIndicator.style.display = 'none';
+        sendBtn.disabled = false;
+        if (data.response) {
+            addMessage('assistant', data.response);
+        } else {
+            addMessage('assistant', 'Sorry, something went wrong.');
+        }
+    })
+    .catch(() => {
+        typingIndicator.style.display = 'none';
+        sendBtn.disabled = false;
+        addMessage('assistant', 'Connection error. Please try again.');
+    });
+}
+</script>
+{% endif %}
 {% endblock %}
