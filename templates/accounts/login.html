@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login — Mind Nest{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="bi bi-brain fs-1 text-primary"></i>
+            <h2 class="mt-2 fw-bold">Mind Nest</h2>
+            <p class="text-muted">Sign in to your account</p>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username"
+                       class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                       value="{{ form.username.value|default:'' }}"
+                       placeholder="Enter your username" autofocus>
+                {% for error in form.username.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password"
+                       class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                       placeholder="Enter your password">
+                {% for error in form.password.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+            </button>
+        </form>
+
+        <p class="text-center mt-3 text-muted">
+            Don't have an account?
+            <a href="{% url 'accounts:register' %}" class="text-primary fw-medium">Register</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
