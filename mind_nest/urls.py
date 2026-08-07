@@ -11,5 +11,5 @@ urlpatterns = [
     path('notes/', include('notes.urls')),
     path('resources/', include('resources.urls')),
     path('ai/', include('ai_assistant.urls')),
-    path('', include('dashboard.urls')),
+    path('', include('dashboard.urls', namespace='home')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
