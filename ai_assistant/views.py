@@ -26,7 +26,7 @@ def get_gemini_response(conversation_history, user_message):
         history.append(types.Content(role='user', parts=[types.Part(text=user_message)]))
 
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-2.5-flash',
             contents=history,
             config=types.GenerateContentConfig(
                 system_instruction=(
