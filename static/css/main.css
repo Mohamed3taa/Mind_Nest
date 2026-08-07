@@ -104,10 +104,15 @@ body {
     background: var(--gradient);
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: white;
     flex-shrink: 0;
-    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+    position: relative;
+}
+
+.sidebar-brand-logo i {
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
 }
 
 .sidebar-brand-text {
@@ -360,14 +365,18 @@ body {
 .auth-header { text-align: center; margin-bottom: 32px; }
 
 .auth-logo {
-    width: 60px; height: 60px;
+    width: 64px; height: 64px;
     background: var(--gradient);
-    border-radius: 16px;
+    border-radius: 18px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.8rem;
+    font-size: 2rem;
     color: white;
     margin: 0 auto 16px;
-    box-shadow: 0 8px 24px rgba(99,102,241,0.4);
+    box-shadow: 0 8px 28px rgba(99,102,241,0.45), 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.auth-logo i {
+    filter: drop-shadow(0 0 8px rgba(255,255,255,0.5));
 }
 
 /* ── Stat Cards ──────────────────────────────────────────────── */
