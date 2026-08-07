@@ -24,15 +24,17 @@
 
     <!-- Sidebar -->
     <nav id="sidebar" class="sidebar">
-        <div class="sidebar-brand">
+        <a href="{% url 'dashboard:index' %}" class="sidebar-brand">
             <div class="sidebar-brand-logo">
-                <i class="bi bi-lightbulb-fill"></i>
+                {% load static %}
+                <img src="{% static 'images/logo.png' %}" alt="Mind Nest Logo"
+                     style="width:34px;height:34px;object-fit:contain;border-radius:6px;">
             </div>
             <div class="sidebar-brand-text">
                 <span class="sidebar-brand-name">Mind Nest</span>
                 <span class="sidebar-brand-tagline">AI Study Hub</span>
             </div>
-        </div>
+        </a>
 
         <ul class="sidebar-nav">
             <li>
