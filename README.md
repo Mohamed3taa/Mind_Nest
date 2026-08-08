@@ -156,8 +156,8 @@ Mind_Nest/
 
 | Name | Role |
 |------|------|
-| Mohamed Ataa | Full Stack Developer |
-| Partner | Full Stack Developer |
+| Mohamed Ataa Elbassal | Full Stack Developer |
+| Sarah Yasser | Full Stack Developer |
 
 ---
 
