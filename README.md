@@ -16,7 +16,7 @@
 
 ## 📖 Overview
 
-**Mind Nest** is a full-featured web application that helps students organize their study materials, manage tasks, take notes, and save learning resources — all powered by an integrated **Google Gemini AI Assistant**.
+**Mind Nest** is a full-featured web application that helps students organize their study materials, manage tasks, take notes, and save learning resources. all powered by an integrated **Google Gemini AI Assistant**.
 
 ---
 
