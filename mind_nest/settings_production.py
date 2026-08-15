@@ -1,6 +1,5 @@
 """
-Production settings for Mind Nest.
-Used when deploying to Railway / Render.
+Production settings for Mind Nest — Railway deployment.
 """
 
 from .settings import *
@@ -9,21 +8,31 @@ import dj_database_url
 
 # Security
 DEBUG = False
-SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['*']  # Railway sets the host automatically
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
+ALLOWED_HOSTS = ['*']
 
-# Database — use DATABASE_URL from Railway
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Database — Railway provides DATABASE_URL automatically
+DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
     }
 
-# Static files — WhiteNoise serves static files in production
+# Static files — WhiteNoise
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATIC_ROOT  = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
+# Media
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Security
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+]
