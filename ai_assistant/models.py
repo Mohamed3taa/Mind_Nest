@@ -31,3 +31,25 @@ class AIMessage(models.Model):
 
     def __str__(self):
         return f"[{self.role}] {self.content[:50]}"
+
+
+class UploadedDocument(models.Model):
+    """Stores documents uploaded by the user for AI analysis"""
+
+    class DocType(models.TextChoices):
+        PDF  = 'pdf',  'PDF'
+        DOCX = 'docx', 'Word Document'
+        TXT  = 'txt',  'Text File'
+
+    user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
+    title       = models.CharField(max_length=200)
+    file        = models.FileField(upload_to='ai_documents/')
+    doc_type    = models.CharField(max_length=10, choices=DocType.choices)
+    extracted_text = models.TextField(blank=True)   # extracted content stored here
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.user.username} — {self.title}"

@@ -53,6 +53,62 @@
                             </div>
                         {% endif %}
                     </div>
+
+                    <!-- Documents Section -->
+                    <div class="border-top p-2">
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                            <span class="small fw-semibold text-muted">
+                                <i class="bi bi-file-earmark-text me-1"></i>Documents
+                                <span class="badge bg-secondary ms-1">{{ docs_count }}</span>
+                            </span>
+                            <button class="btn btn-link btn-sm p-0 text-primary"
+                                    data-bs-toggle="collapse" data-bs-target="#uploadSection">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                        </div>
+
+                        <!-- Upload Form -->
+                        <div class="collapse" id="uploadSection">
+                            <form method="post" action="{% url 'ai_assistant:upload_document' %}"
+                                  enctype="multipart/form-data" class="mb-2">
+                                {% csrf_token %}
+                                <input type="text" name="title" class="form-control form-control-sm mb-1"
+                                       placeholder="Document title (optional)">
+                                <input type="file" name="document" class="form-control form-control-sm mb-1"
+                                       accept=".pdf,.docx,.txt" required>
+                                <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <i class="bi bi-upload me-1"></i>Upload
+                                </button>
+                            </form>
+                            <div class="text-muted" style="font-size:0.7rem; padding:0 4px;">
+                                Supports: PDF, DOCX, TXT
+                            </div>
+                        </div>
+
+                        <!-- Uploaded Documents List -->
+                        {% if documents %}
+                        <div style="max-height:150px; overflow-y:auto;">
+                            {% for doc in documents %}
+                            <div class="d-flex align-items-center justify-content-between p-1 rounded mb-1"
+                                 style="background:rgba(99,102,241,0.07)">
+                                <div class="d-flex align-items-center gap-1 overflow-hidden">
+                                    <i class="bi bi-file-earmark-{% if doc.doc_type == 'pdf' %}pdf text-danger{% elif doc.doc_type == 'docx' %}word text-primary{% else %}text text-secondary{% endif %}"
+                                       style="font-size:0.85rem; flex-shrink:0"></i>
+                                    <span class="small text-truncate" style="max-width:130px;"
+                                          title="{{ doc.title }}">{{ doc.title }}</span>
+                                </div>
+                                <form method="post" action="{% url 'ai_assistant:delete_document' doc.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-link btn-sm p-0 text-danger"
+                                            onclick="return confirm('Delete document?')">
+                                        <i class="bi bi-x" style="font-size:0.85rem"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
