@@ -11,7 +11,7 @@
 ![Gemini](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Railway](https://img.shields.io/badge/Deployed_on-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
 
-**🌐 Live Demo:** [web-production-ce34e.up.railway.app](https://web-production-ce34e.up.railway.app)
+**🌐 Live Demo:** (https://web-mindnest-ce34e.up.railway.app/)
 
 </div>
 
