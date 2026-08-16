@@ -90,20 +90,41 @@
                         {% endfor %}
                     {% else %}
                         <div class="text-center text-muted py-5">
-                            <i class="bi bi-chat-dots fs-1 d-block mb-3"></i>
-                            <p>Start the conversation! Ask me anything about your studies.</p>
+                            <i class="bi bi-robot fs-1 d-block mb-3 text-primary"></i>
+                            <p class="fw-semibold">Ask me about your Mind Nest data!</p>
+                            <p class="small text-muted mb-3">
+                                I can only answer based on your notes, tasks, and resources.
+                            </p>
+                            <!-- User data stats -->
+                            <div class="d-flex justify-content-center gap-3 mb-4">
+                                <div class="text-center">
+                                    <div class="fw-bold text-primary">{{ notes_count }}</div>
+                                    <div class="small text-muted">Notes</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-primary">{{ tasks_count }}</div>
+                                    <div class="small text-muted">Tasks</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-primary">{{ resources_count }}</div>
+                                    <div class="small text-muted">Resources</div>
+                                </div>
+                            </div>
                             <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    Explain a concept
-                                </button>
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    Generate quiz questions
-                                </button>
                                 <button class="btn btn-outline-primary btn-sm suggestion-btn">
                                     Summarize my notes
                                 </button>
                                 <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    Help with Python code
+                                    Generate quiz from my notes
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    What tasks are pending?
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    Create flashcards from my notes
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
+                                    What resources do I have?
                                 </button>
                             </div>
                         </div>
