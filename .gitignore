@@ -36,3 +36,7 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# Local explanation files (do not push)
+*/explanation.py
+explanation.py
