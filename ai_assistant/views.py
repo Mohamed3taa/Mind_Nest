@@ -1,14 +1,3 @@
-"""
-ai_assistant/views.py
-----------------------
-Handles the AI chat interface using Google Gemini API.
-The AI answers based on the user's own data in Mind Nest:
-- Their notes, categories, tags
-- Their tasks (planner)
-- Their saved resources
-- Their uploaded documents (PDF, DOCX, TXT)
-"""
-
 import os
 import json
 from dotenv import load_dotenv
@@ -27,39 +16,29 @@ client = genai.Client(api_key=os.getenv('AI_API_KEY'))
 
 
 def extract_text_from_file(file, doc_type):
-    """Extract text content from uploaded PDF, DOCX, or TXT file."""
     try:
         if doc_type == 'pdf':
             import PyPDF2
             reader = PyPDF2.PdfReader(file)
             return ''.join([page.extract_text() or '' for page in reader.pages]).strip()
-
         elif doc_type == 'docx':
             from docx import Document
             doc = Document(file)
             return '\n'.join([p.text for p in doc.paragraphs if p.text.strip()])
-
         elif doc_type == 'txt':
             return file.read().decode('utf-8', errors='ignore')
-
     except Exception as e:
         print(f"[EXTRACT ERROR] {e}")
     return ''
 
 
 def build_user_context(user):
-    """
-    Build a context string from all the user's data in Mind Nest:
-    uploaded documents, notes, tasks, and resources.
-    This is injected into Gemini's system prompt.
-    """
     from notes.models import Note
     from planner.models import Task
     from resources.models import Resource
 
     context_parts = []
 
-    # ── Uploaded Documents ──────────────────────────────────────
     documents = UploadedDocument.objects.filter(user=user)
     if documents.exists():
         context_parts.append("=== USER'S UPLOADED DOCUMENTS ===")
@@ -68,7 +47,6 @@ def build_user_context(user):
             if doc.extracted_text:
                 context_parts.append(doc.extracted_text[:3000])
 
-    # ── Notes ───────────────────────────────────────────────────
     notes = Note.objects.filter(user=user).order_by('-updated_at')[:20]
     if notes.exists():
         context_parts.append("=== USER'S NOTES ===")
@@ -82,7 +60,6 @@ def build_user_context(user):
             note_text += f"Content:\n{note.content}\n"
             context_parts.append(note_text)
 
-    # ── Tasks ───────────────────────────────────────────────────
     tasks = Task.objects.filter(user=user).order_by('-created_at')[:20]
     if tasks.exists():
         context_parts.append("=== USER'S STUDY TASKS ===")
@@ -94,7 +71,6 @@ def build_user_context(user):
                 task_text += f"\n  Description: {task.description}"
             context_parts.append(task_text)
 
-    # ── Resources ───────────────────────────────────────────────
     resources = Resource.objects.filter(user=user).order_by('-created_at')[:20]
     if resources.exists():
         context_parts.append("=== USER'S LEARNING RESOURCES ===")
@@ -114,7 +90,6 @@ def build_user_context(user):
 
 
 def get_system_prompt(user):
-    """Build dynamic system prompt with user's actual data."""
     user_data = build_user_context(user)
 
     return f"""You are Mind Nest AI, a personal study assistant for {user.get_full_name() or user.username}.
@@ -138,7 +113,6 @@ Answer only based on the data above."""
 
 
 def get_gemini_response(conversation_history, user_message, user):
-    """Send message to Gemini with user's personal data as context."""
     try:
         contents = []
         for msg in conversation_history:
@@ -161,7 +135,6 @@ def get_gemini_response(conversation_history, user_message, user):
 
 @login_required
 def chat(request):
-    """Main chat page with conversation list and document upload sidebar."""
     conversations = AIConversation.objects.filter(user=request.user)
     active_conv   = None
     messages_list = []
@@ -191,7 +164,6 @@ def chat(request):
 
 @login_required
 def new_conversation(request):
-    """Create a new conversation and redirect to it."""
     if request.method == 'POST':
         title = request.POST.get('title', 'New Conversation')
         conv  = AIConversation.objects.create(user=request.user, title=title)
@@ -202,7 +174,6 @@ def new_conversation(request):
 @login_required
 @require_POST
 def send_message(request, conv_id):
-    """Handle AJAX message — answers based on user's data only."""
     conv     = get_object_or_404(AIConversation, pk=conv_id, user=request.user)
     data     = json.loads(request.body)
     user_msg = data.get('message', '').strip()
@@ -228,7 +199,6 @@ def send_message(request, conv_id):
 
 @login_required
 def upload_document(request):
-    """Upload PDF, DOCX, or TXT file for AI analysis."""
     if request.method == 'POST':
         uploaded_file = request.FILES.get('document')
         title         = request.POST.get('title', '').strip()
@@ -268,7 +238,6 @@ def upload_document(request):
 
 @login_required
 def delete_document(request, doc_id):
-    """Delete an uploaded document."""
     doc = get_object_or_404(UploadedDocument, pk=doc_id, user=request.user)
     if request.method == 'POST':
         doc.file.delete(save=False)
@@ -279,7 +248,6 @@ def delete_document(request, doc_id):
 
 @login_required
 def delete_conversation(request, conv_id):
-    """Delete a conversation and all its messages."""
     conv = get_object_or_404(AIConversation, pk=conv_id, user=request.user)
     if request.method == 'POST':
         conv.delete()

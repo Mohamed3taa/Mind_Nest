@@ -1,7 +1,3 @@
-"""
-Django settings for mind_nest project.
-"""
-
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -16,7 +12,6 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['*']
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -24,7 +19,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Local apps
     'accounts',
     'dashboard',
     'planner',
@@ -62,7 +56,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mind_nest.wsgi.application'
 
-# Database — PostgreSQL
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -74,7 +67,6 @@ DATABASES = {
     }
 }
 
-# Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -82,38 +74,31 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'Africa/Cairo'
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = 'Africa/Cairo'
+USE_I18N      = True
+USE_TZ        = True
 
-# Static files
-STATIC_URL = '/static/'
+STATIC_URL       = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT      = BASE_DIR / 'staticfiles'
 
-# Media files
-MEDIA_URL = '/media/'
+MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Default primary key
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Auth redirects
-LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
+LOGIN_URL           = '/accounts/login/'
+LOGIN_REDIRECT_URL  = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/accounts/login/'
 
-# Email settings
-EMAIL_BACKEND     = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST        = 'smtp.gmail.com'
-EMAIL_PORT        = 587
-EMAIL_USE_TLS     = True
-EMAIL_HOST_USER   = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER
 
-# Use console backend for development if no email configured
 if not EMAIL_HOST_USER:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

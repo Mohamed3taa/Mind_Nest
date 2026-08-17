@@ -9,9 +9,7 @@ from .forms import TaskForm
 
 @login_required
 def task_list(request):
-    tasks = Task.objects.filter(user=request.user)
-
-    # Filtering
+    tasks    = Task.objects.filter(user=request.user)
     priority = request.GET.get('priority', '')
     status   = request.GET.get('status', '')
     search   = request.GET.get('search', '')
@@ -23,26 +21,22 @@ def task_list(request):
     if search:
         tasks = tasks.filter(title__icontains=search)
 
-    # Pagination
     paginator = Paginator(tasks, 8)
     page      = request.GET.get('page', 1)
     tasks     = paginator.get_page(page)
 
-    # Counts for tabs
-    all_count       = Task.objects.filter(user=request.user).count()
-    todo_count      = Task.objects.filter(user=request.user, status='todo').count()
-    progress_count  = Task.objects.filter(user=request.user, status='in_progress').count()
-    done_count      = Task.objects.filter(user=request.user, status='done').count()
-
-    form = TaskForm()
+    all_count      = Task.objects.filter(user=request.user).count()
+    todo_count     = Task.objects.filter(user=request.user, status='todo').count()
+    progress_count = Task.objects.filter(user=request.user, status='in_progress').count()
+    done_count     = Task.objects.filter(user=request.user, status='done').count()
 
     context = {
-        'tasks':          tasks,
-        'form':           form,
-        'all_count':      all_count,
-        'todo_count':     todo_count,
-        'progress_count': progress_count,
-        'done_count':     done_count,
+        'tasks':            tasks,
+        'form':             TaskForm(),
+        'all_count':        all_count,
+        'todo_count':       todo_count,
+        'progress_count':   progress_count,
+        'done_count':       done_count,
         'current_priority': priority,
         'current_status':   status,
         'current_search':   search,
@@ -55,7 +49,7 @@ def task_create(request):
     if request.method == 'POST':
         form = TaskForm(request.POST)
         if form.is_valid():
-            task = form.save(commit=False)
+            task      = form.save(commit=False)
             task.user = request.user
             task.save()
             messages.success(request, 'Task created successfully!')
@@ -88,11 +82,10 @@ def task_delete(request, pk):
 
 @login_required
 def task_toggle(request, pk):
-    """Mark task as completed / uncompleted via AJAX"""
     task = get_object_or_404(Task, pk=pk, user=request.user)
     if request.method == 'POST':
         task.is_completed = not task.is_completed
-        task.status = 'done' if task.is_completed else 'todo'
+        task.status       = 'done' if task.is_completed else 'todo'
         task.save()
         return JsonResponse({'is_completed': task.is_completed, 'status': task.status})
     return JsonResponse({'error': 'Invalid request'}, status=400)

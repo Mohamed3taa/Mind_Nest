@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 class Category(models.Model):
     user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='categories')
     name       = models.CharField(max_length=100)
-    color      = models.CharField(max_length=7, default='#6c757d')  # hex color
+    color      = models.CharField(max_length=7, default='#6c757d')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

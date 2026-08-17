@@ -1,12 +1,3 @@
-"""
-accounts/views.py
------------------
-Handles all authentication and user profile logic:
-- Register, Login, Logout
-- Profile update (user info + avatar)
-- Password change
-"""
-
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -15,10 +6,6 @@ from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm, C
 
 
 def register_view(request):
-    """
-    Handle new user registration.
-    On success: create user + auto-login + redirect to dashboard.
-    """
     if request.user.is_authenticated:
         return redirect('dashboard:index')
 
@@ -36,10 +23,6 @@ def register_view(request):
 
 
 def login_view(request):
-    """
-    Handle user login with username/password.
-    Supports ?next= redirect after successful login.
-    """
     if request.user.is_authenticated:
         return redirect('dashboard:index')
 
@@ -61,7 +44,6 @@ def login_view(request):
 
 
 def logout_view(request):
-    """Log out the current user and redirect to login page."""
     if request.method == 'POST':
         logout(request)
         messages.success(request, 'You have been logged out successfully.')
@@ -70,11 +52,6 @@ def logout_view(request):
 
 @login_required
 def profile_view(request):
-    """
-    Display and update user profile.
-    Handles both User model fields and Profile model fields (avatar, bio, phone).
-    Uses two forms simultaneously: UpdateUserForm + UpdateProfileForm.
-    """
     user_form    = UpdateUserForm(instance=request.user)
     profile_form = UpdateProfileForm(instance=request.user.profile)
 
@@ -99,16 +76,12 @@ def profile_view(request):
 
 @login_required
 def change_password_view(request):
-    """
-    Allow logged-in user to change their password.
-    Calls update_session_auth_hash to keep the user logged in after change.
-    """
     form = CustomPasswordChangeForm(request.user, request.POST or None)
 
     if request.method == 'POST':
         if form.is_valid():
             user = form.save()
-            update_session_auth_hash(request, user)   # prevent logout after password change
+            update_session_auth_hash(request, user)
             messages.success(request, 'Password changed successfully!')
             return redirect('accounts:profile')
         else:
