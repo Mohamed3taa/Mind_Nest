@@ -77,7 +77,9 @@
         <div class="col-md-4">
             <div class="card p-4">
                 <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart me-2"></i>Tasks by Status</h6>
-                <canvas id="statusChart" height="200"></canvas>
+                <div style="position:relative; height:200px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
             </div>
         </div>
         <!-- Content Overview -->
@@ -276,6 +278,8 @@ new Chart(document.getElementById('statusChart'), {
     },
     options: {
         ...chartDefaults,
+        responsive: true,
+        maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
             y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(128,128,128,0.1)' } },
