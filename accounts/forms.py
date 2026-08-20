@@ -1,3 +1,4 @@
+import re
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
@@ -44,8 +45,16 @@ class UpdateProfileForm(forms.ModelForm):
         model   = Profile
         fields  = ('avatar', 'bio', 'phone')
         widgets = {
-            'bio': forms.Textarea(attrs={'rows': 4}),
+            'bio':   forms.Textarea(attrs={'rows': 4}),
+            'phone': forms.TextInput(attrs={'placeholder': 'e.g. 01012345678'}),
         }
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone', '').strip()
+        if phone:
+            if not re.match(r'^\d{11,12}$', phone):
+                raise forms.ValidationError('Phone number must be 11 or 12 digits (numbers only).')
+        return phone
 
 
 class CustomPasswordChangeForm(PasswordChangeForm):

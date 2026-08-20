@@ -81,8 +81,12 @@
                     <div class="mt-3">
                         <label class="form-label">Phone</label>
                         <input type="text" name="phone"
-                               class="form-control"
-                               value="{{ profile_form.phone.value|default:'' }}">
+                               class="form-control {% if profile_form.phone.errors %}is-invalid{% endif %}"
+                               value="{{ profile_form.phone.value|default:'' }}"
+                               placeholder="e.g. 01012345678">
+                        {% for error in profile_form.phone.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
                     </div>
 
                     <div class="mt-3">
