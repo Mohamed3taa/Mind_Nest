@@ -25,7 +25,7 @@ class NoteForm(forms.ModelForm):
         model   = Note
         fields  = ('title', 'content', 'category', 'is_pinned')
         widgets = {
-            'title':     forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Note title...'}),
+            'title':     forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Note title...', 'maxlength': '200'}),
             'content':   forms.Textarea(attrs={'class': 'form-control', 'rows': 8, 'placeholder': 'Write your note here...'}),
             'category':  forms.Select(attrs={'class': 'form-select'}),
             'is_pinned': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
@@ -36,7 +36,6 @@ class NoteForm(forms.ModelForm):
         if user:
             self.fields['category'].queryset = Category.objects.filter(user=user)
             self.fields['category'].empty_label = 'No Category'
-            # pre-fill tags_input if editing
             if self.instance.pk:
                 self.fields['tags_input'].initial = ', '.join(
                     self.instance.tags.values_list('name', flat=True)
