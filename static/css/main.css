@@ -733,3 +733,12 @@ body {
 
 /* Badge overrides */
 .badge.bg-primary { background: var(--gradient) !important; }
+
+/* ---- Auth error message ---- */
+.auth-card .alert-danger {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+}

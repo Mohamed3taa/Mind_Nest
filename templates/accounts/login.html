@@ -19,6 +19,14 @@
         <form method="post" novalidate>
             {% csrf_token %}
 
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-danger py-2 mb-3" role="alert">
+                <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
             <div class="mb-3">
                 <label class="form-label">Username</label>
                 <input type="text" name="username"
