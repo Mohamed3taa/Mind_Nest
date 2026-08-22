@@ -16,6 +16,30 @@
         <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ today }}</span>
     </div>
 
+    <!-- Quick Add Task -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card p-3">
+                <form method="post" action="{% url 'planner:task_create' %}" class="d-flex gap-2 align-items-center flex-wrap">
+                    {% csrf_token %}
+                    <i class="bi bi-lightning-charge-fill" style="color:var(--accent);font-size:1.1rem;flex-shrink:0"></i>
+                    <input type="text" name="title" class="form-control flex-grow-1"
+                           placeholder="Quick add a task..." required
+                           style="min-width:200px;border-radius:99px;padding:7px 16px">
+                    <select name="priority" class="form-select" style="width:auto;border-radius:99px;padding:7px 14px">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                    <input type="hidden" name="status" value="todo">
+                    <button type="submit" class="btn btn-primary" style="border-radius:99px;padding:7px 20px;white-space:nowrap">
+                        <i class="bi bi-plus-lg me-1"></i>Add Task
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Stat Cards -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
@@ -155,7 +179,12 @@
                             <div>
                                 <span class="fw-medium">{{ task.title }}</span>
                                 <div class="text-muted small mt-1">
-                                    <i class="bi bi-calendar3 me-1"></i>{{ task.due_date }}
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    {% if task.due_date == today %}
+                                        <span style="color:var(--accent);font-weight:600">Due today!</span>
+                                    {% else %}
+                                        {{ task.due_date|timeuntil }} left
+                                    {% endif %}
                                 </div>
                             </div>
                             <span class="badge badge-{{ task.priority }} rounded-pill px-3">

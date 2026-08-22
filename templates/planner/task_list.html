@@ -103,8 +103,17 @@
                                     </span>
                                     {% if task.due_date %}
                                     <span class="badge" style="border-radius:99px;padding:3px 10px;
-                                        {% if task.due_date < today and not task.is_completed %}background:rgba(239,68,68,0.12);color:#dc2626;{% else %}background:rgba(71,85,105,0.08);color:var(--text-muted);{% endif %}">
-                                        <i class="bi bi-calendar3 me-1"></i>{{ task.due_date }}
+                                        {% if task.due_date < today and not task.is_completed %}background:rgba(239,68,68,0.12);color:#dc2626;{% elif task.due_date == today and not task.is_completed %}background:rgba(234,88,12,0.12);color:var(--accent);{% else %}background:rgba(71,85,105,0.08);color:var(--text-muted);{% endif %}">
+                                        <i class="bi bi-calendar3 me-1"></i>
+                                        {% if task.is_completed %}
+                                            {{ task.due_date }}
+                                        {% elif task.due_date < today %}
+                                            Overdue!
+                                        {% elif task.due_date == today %}
+                                            Due today!
+                                        {% else %}
+                                            {{ task.due_date|timeuntil }} left
+                                        {% endif %}
                                     </span>
                                     {% endif %}
                                 </div>
@@ -297,16 +306,64 @@ document.querySelectorAll('.task-toggle').forEach(function(checkbox) {
         .then(r => r.json())
         .then(data => {
             const title = row.querySelector('h6');
+            const card  = row.querySelector('.card');
             if (data.is_completed) {
-                title.classList.add('text-decoration-line-through', 'text-muted');
-                row.querySelector('.card').classList.add('opacity-75');
+                title.classList.add('text-decoration-line-through');
+                title.style.color = 'var(--text-muted)';
+                card.classList.add('opacity-60');
+                // Celebration confetti
+                launchConfetti(row);
             } else {
-                title.classList.remove('text-decoration-line-through', 'text-muted');
-                row.querySelector('.card').classList.remove('opacity-75');
+                title.classList.remove('text-decoration-line-through');
+                title.style.color = '';
+                card.classList.remove('opacity-60');
             }
         });
     });
 });
+
+function launchConfetti(anchor) {
+    const colors = ['#0D9488', '#14B8A6', '#EA580C', '#F97316', '#10b981', '#3b82f6'];
+    const rect   = anchor.getBoundingClientRect();
+    const cx     = rect.left + rect.width / 2;
+    const cy     = rect.top  + rect.height / 2;
+
+    for (let i = 0; i < 18; i++) {
+        const el = document.createElement('div');
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const size  = Math.random() * 8 + 5;
+        const angle = (Math.PI * 2 / 18) * i;
+        const dist  = Math.random() * 80 + 40;
+        const tx    = Math.cos(angle) * dist;
+        const ty    = Math.sin(angle) * dist - 30;
+
+        el.style.cssText = `
+            position:fixed;
+            left:${cx}px; top:${cy}px;
+            width:${size}px; height:${size}px;
+            background:${color};
+            border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+            pointer-events:none;
+            z-index:9999;
+            transform:translate(-50%,-50%);
+            animation:confettiFly 0.7s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+            --tx:${tx}px; --ty:${ty}px;
+        `;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 750);
+    }
+}
+
+// Inject confetti keyframe once
+if (!document.getElementById('confetti-style')) {
+    const s = document.createElement('style');
+    s.id = 'confetti-style';
+    s.textContent = `@keyframes confettiFly {
+        0%   { opacity:1; transform:translate(-50%,-50%) scale(1); }
+        100% { opacity:0; transform:translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.3) rotate(180deg); }
+    }`;
+    document.head.appendChild(s);
+}
 
 // Live search
 document.querySelector('input[name="search"]').addEventListener('input', function() {
