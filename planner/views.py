@@ -51,6 +51,8 @@ def task_create(request):
         if form.is_valid():
             task      = form.save(commit=False)
             task.user = request.user
+            # sync is_completed with status
+            task.is_completed = (task.status == 'done')
             task.save()
             messages.success(request, 'Task created successfully!')
         else:
@@ -64,7 +66,10 @@ def task_edit(request, pk):
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
+            updated_task = form.save(commit=False)
+            # keep is_completed in sync with status
+            updated_task.is_completed = (updated_task.status == 'done')
+            updated_task.save()
             messages.success(request, 'Task updated successfully!')
         else:
             messages.error(request, 'Please fix the errors.')
