@@ -16,7 +16,7 @@
     --accent-light:   #F97316;
     --gradient:       linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
     --gradient-warm:  linear-gradient(135deg, #EA580C 0%, #F97316 100%);
-    --gradient-soft:  linear-gradient(135deg, rgba(13,148,136,0.1) 0%, rgba(20,184,166,0.1) 100%);
+    --gradient-soft:  linear-gradient(135deg, rgba(13,148,136,0.08) 0%, rgba(20,184,166,0.08) 100%);
 
     --success:  #10b981;
     --warning:  #f59e0b;
@@ -28,15 +28,16 @@
     --sidebar-text:  #94a3b8;
     --sidebar-hover: rgba(13,148,136,0.15);
 
+    /* Neutral surfaces — no eye-strain teal tint */
     --surface:     #ffffff;
-    --surface-2:   #f0fdfa;
-    --border:      #ccfbf1;
-    --text:        #134e4a;
-    --text-muted:  #475569;
-    --bg:          #f0fdfa;
+    --surface-2:   #f8fafc;
+    --border:      #e2e8f0;
+    --text:        #0f172a;
+    --text-muted:  #64748b;
+    --bg:          #f1f5f9;
 
-    --card-shadow:       0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(13,148,136,0.07);
-    --card-shadow-hover: 0 8px 24px rgba(13,148,136,0.18), 0 2px 8px rgba(0,0,0,0.06);
+    --card-shadow:       0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);
+    --card-shadow-hover: 0 8px 24px rgba(13,148,136,0.15), 0 2px 8px rgba(0,0,0,0.06);
     --radius:       14px;
     --radius-sm:    8px;
     --radius-xs:    6px;
@@ -46,13 +47,15 @@
 [data-bs-theme="dark"] {
     --surface:    #1e293b;
     --surface-2:  #0f172a;
-    --border:     #1a3a38;
-    --text:       #f0fdfa;
+    --border:     #334155;
+    --text:       #f1f5f9;
     --text-muted: #94a3b8;
-    --bg:         #0c1a19;
+    --bg:         #0f172a;
     --card-shadow:       0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
-    --card-shadow-hover: 0 8px 24px rgba(13,148,136,0.25), 0 2px 8px rgba(0,0,0,0.3);
+    --card-shadow-hover: 0 8px 24px rgba(13,148,136,0.2), 0 2px 8px rgba(0,0,0,0.3);
     --sidebar-bg: #020617;
+    --gradient-soft: linear-gradient(135deg, rgba(13,148,136,0.12) 0%, rgba(20,184,166,0.08) 100%);
+}
     --gradient-soft: linear-gradient(135deg, rgba(13,148,136,0.18) 0%, rgba(20,184,166,0.1) 100%);
 }
 
