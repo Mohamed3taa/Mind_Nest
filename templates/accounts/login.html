@@ -1,19 +1,20 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Login — Mind Nest{% endblock %}
+{% block title %}Sign In — Mind Nest{% endblock %}
 
 {% block auth_content %}
 <div class="auth-wrapper">
     <div class="auth-card">
+
+        <!-- Logo -->
         <div class="auth-header">
-            {% load static %}
-            <div class="auth-logo" style="background:none;box-shadow:none;">
+            <div class="auth-logo">
                 <img src="{% static 'images/logo.png' %}" alt="Mind Nest"
-                     style="width:80px;height:80px;object-fit:contain;">
+                     style="width:40px;height:40px;object-fit:contain;">
             </div>
-            <h2 class="fw-bold" style="letter-spacing:-0.5px">Mind Nest</h2>
-            <p class="text-muted">Sign in to your account</p>
+            <h2 class="fw-bold mb-1" style="letter-spacing:-0.5px;font-size:1.5rem">Welcome back</h2>
+            <p class="text-muted" style="font-size:0.875rem">Sign in to your Mind Nest account</p>
         </div>
 
         <form method="post" novalidate>
@@ -21,47 +22,53 @@
 
             {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-danger py-2 mb-3" role="alert">
-                <i class="bi bi-exclamation-circle me-2"></i>{{ message }}
+            <div class="alert alert-danger mb-3" role="alert">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>{{ message }}
             </div>
             {% endfor %}
             {% endif %}
 
-            <div class="mb-3">
+            <div class="mb-4">
                 <label class="form-label">Username</label>
-                <input type="text" name="username"
-                       class="form-control {% if form.username.errors %}is-invalid{% endif %}"
-                       value="{{ form.username.value|default:'' }}"
-                       placeholder="Enter your username" autofocus>
-                {% for error in form.username.errors %}
-                    <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <div class="input-group-with-icon">
+                    <input type="text" name="username"
+                           class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                           value="{{ form.username.value|default:'' }}"
+                           placeholder="Enter your username" autofocus autocomplete="username">
+                    {% for error in form.username.errors %}
+                        <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Password</label>
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">Password</label>
+                    <a href="{% url 'accounts:password_reset' %}" class="text-muted small"
+                       style="font-size:0.78rem;text-decoration:none;transition:color 0.2s">
+                        Forgot password?
+                    </a>
+                </div>
                 <input type="password" name="password"
                        class="form-control {% if form.password.errors %}is-invalid{% endif %}"
-                       placeholder="Enter your password">
+                       placeholder="Enter your password" autocomplete="current-password">
                 {% for error in form.password.errors %}
                     <div class="invalid-feedback">{{ error }}</div>
                 {% endfor %}
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="font-size:0.95rem">
                 <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
             </button>
         </form>
 
-        <p class="text-center mt-3 text-muted">
-            Don't have an account?
-            <a href="{% url 'accounts:register' %}" class="text-primary fw-medium">Register</a>
-        </p>
-        <p class="text-center text-muted">
-            <a href="{% url 'accounts:password_reset' %}" class="text-muted small">
-                Forgot your password?
-            </a>
-        </p>
+        <div class="auth-divider">
+            <span>New to Mind Nest?</span>
+        </div>
+
+        <a href="{% url 'accounts:register' %}" class="btn btn-outline-secondary w-100 py-2" style="font-size:0.875rem">
+            <i class="bi bi-person-plus me-2"></i>Create an Account
+        </a>
     </div>
 </div>
 {% endblock auth_content %}

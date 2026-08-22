@@ -14,22 +14,26 @@
     </div>
 
     <!-- Status Tabs -->
-    <div class="d-flex gap-2 mb-3 flex-wrap">
+    <div class="filter-pills mb-4">
         <a href="{% url 'planner:task_list' %}"
-           class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-            All <span class="badge bg-white text-dark ms-1">{{ all_count }}</span>
+           class="filter-pill {% if not current_status %}active{% endif %}">
+            <i class="bi bi-grid-3x3-gap-fill"></i> All
+            <span style="opacity:0.7;font-size:0.72rem">({{ all_count }})</span>
         </a>
         <a href="?status=todo"
-           class="btn btn-sm {% if current_status == 'todo' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-            To Do <span class="badge bg-white text-dark ms-1">{{ todo_count }}</span>
+           class="filter-pill {% if current_status == 'todo' %}active{% endif %}">
+            <i class="bi bi-circle"></i> To Do
+            <span style="opacity:0.7;font-size:0.72rem">({{ todo_count }})</span>
         </a>
         <a href="?status=in_progress"
-           class="btn btn-sm {% if current_status == 'in_progress' %}btn-warning{% else %}btn-outline-secondary{% endif %}">
-            In Progress <span class="badge bg-white text-dark ms-1">{{ progress_count }}</span>
+           class="filter-pill {% if current_status == 'in_progress' %}active{% endif %}" style="{% if current_status == 'in_progress' %}background:var(--gradient-warm);border-color:transparent;{% endif %}">
+            <i class="bi bi-arrow-clockwise"></i> In Progress
+            <span style="opacity:0.7;font-size:0.72rem">({{ progress_count }})</span>
         </a>
         <a href="?status=done"
-           class="btn btn-sm {% if current_status == 'done' %}btn-success{% else %}btn-outline-secondary{% endif %}">
-            Done <span class="badge bg-white text-dark ms-1">{{ done_count }}</span>
+           class="filter-pill {% if current_status == 'done' %}active{% endif %}" style="{% if current_status == 'done' %}background:linear-gradient(135deg,#059669,#10b981);border-color:transparent;{% endif %}">
+            <i class="bi bi-check-circle-fill"></i> Done
+            <span style="opacity:0.7;font-size:0.72rem">({{ done_count }})</span>
         </a>
     </div>
 
@@ -62,60 +66,68 @@
     <div class="row g-3" id="taskContainer">
         {% for task in tasks %}
         <div class="col-12" id="task-{{ task.pk }}">
-            <div class="card p-3 task-card {% if task.is_completed %}opacity-75{% endif %}">
+            <div class="card p-3 task-card {% if task.is_completed %}opacity-60{% endif %}">
                 <div class="d-flex align-items-start gap-3">
 
                     <!-- Checkbox -->
-                    <div class="pt-1">
-                        <input type="checkbox" class="form-check-input task-toggle fs-5"
+                    <div class="pt-1 flex-shrink-0">
+                        <input type="checkbox" class="form-check-input task-toggle"
+                               style="width:1.15em;height:1.15em;cursor:pointer;accent-color:var(--primary)"
                                data-pk="{{ task.pk }}"
                                {% if task.is_completed %}checked{% endif %}>
                     </div>
 
                     <!-- Content -->
-                    <div class="flex-grow-1">
+                    <div class="flex-grow-1 min-width-0">
                         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                             <div>
-                                <h6 class="mb-1 {% if task.is_completed %}text-decoration-line-through text-muted{% endif %}">
+                                <h6 class="mb-1 fw-semibold {% if task.is_completed %}text-decoration-line-through{% endif %}"
+                                    style="font-size:0.9rem;color:{% if task.is_completed %}var(--text-muted){% else %}var(--text){% endif %}">
                                     {{ task.title }}
                                 </h6>
                                 {% if task.description %}
-                                <p class="text-muted small mb-1">{{ task.description }}</p>
+                                <p class="text-muted mb-2" style="font-size:0.8rem">{{ task.description }}</p>
                                 {% endif %}
-                                <div class="d-flex gap-2 flex-wrap">
-                                    <span class="badge badge-{{ task.priority }} rounded-pill px-2">
+                                <div class="d-flex gap-2 flex-wrap align-items-center">
+                                    <span class="badge badge-{{ task.priority }}" style="border-radius:99px;padding:3px 10px">
                                         {{ task.get_priority_display }}
                                     </span>
-                                    <span class="badge rounded-pill px-2
-                                        {% if task.status == 'done' %}bg-success
-                                        {% elif task.status == 'in_progress' %}bg-warning text-dark
-                                        {% else %}bg-secondary{% endif %}">
+                                    <span class="badge" style="border-radius:99px;padding:3px 10px;
+                                        {% if task.status == 'done' %}background:rgba(16,185,129,0.12);color:#059669;
+                                        {% elif task.status == 'in_progress' %}background:rgba(234,88,12,0.12);color:var(--accent);
+                                        {% else %}background:rgba(71,85,105,0.1);color:var(--text-muted);{% endif %}">
+                                        {% if task.status == 'done' %}<i class="bi bi-check-circle-fill me-1"></i>
+                                        {% elif task.status == 'in_progress' %}<i class="bi bi-arrow-clockwise me-1"></i>
+                                        {% else %}<i class="bi bi-circle me-1"></i>{% endif %}
                                         {{ task.get_status_display }}
                                     </span>
                                     {% if task.due_date %}
-                                    <span class="badge rounded-pill px-2
-                                        {% if task.due_date < today and not task.is_completed %}bg-danger{% else %}bg-light text-dark{% endif %}">
+                                    <span class="badge" style="border-radius:99px;padding:3px 10px;
+                                        {% if task.due_date < today and not task.is_completed %}background:rgba(239,68,68,0.12);color:#dc2626;{% else %}background:rgba(71,85,105,0.08);color:var(--text-muted);{% endif %}">
                                         <i class="bi bi-calendar3 me-1"></i>{{ task.due_date }}
                                     </span>
                                     {% endif %}
                                 </div>
                             </div>
 
-                            <!-- Actions -->
-                            <div class="d-flex gap-1">
+                            <div class="d-flex gap-1 flex-shrink-0">
                                 <button class="btn btn-sm btn-outline-primary"
+                                        style="padding:4px 9px"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#editTaskModal{{ task.pk }}">
+                                        data-bs-target="#editTaskModal{{ task.pk }}"
+                                        title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger"
+                                        style="padding:4px 9px"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#deleteTaskModal{{ task.pk }}">
+                                        data-bs-target="#deleteTaskModal{{ task.pk }}"
+                                        title="Delete">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="text-muted small mt-1">
+                        <div class="mt-2" style="font-size:0.72rem;color:var(--text-muted)">
                             <i class="bi bi-clock me-1"></i>Created {{ task.created_at|timesince }} ago
                         </div>
                     </div>
@@ -201,10 +213,15 @@
     </div>
 
     {% else %}
-    <div class="card p-5 text-center text-muted">
-        <i class="bi bi-clipboard-check fs-1 d-block mb-3"></i>
+    <div class="card empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-clipboard-check"></i>
+        </div>
         <h5>No tasks found</h5>
-        <p>Click "New Task" to get started!</p>
+        <p>Break your goals into small, manageable tasks.</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+            <i class="bi bi-plus-lg me-1"></i>Add Your First Task
+        </button>
     </div>
     {% endif %}
 

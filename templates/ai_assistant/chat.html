@@ -89,19 +89,19 @@
                         {% if documents %}
                         <div style="max-height:150px; overflow-y:auto;">
                             {% for doc in documents %}
-                            <div class="d-flex align-items-center justify-content-between p-1 rounded mb-1"
-                                 style="background:rgba(99,102,241,0.07)">
-                                <div class="d-flex align-items-center gap-1 overflow-hidden">
+                            <div class="doc-item d-flex align-items-center justify-content-between p-2 rounded mb-1">
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
                                     <i class="bi bi-file-earmark-{% if doc.doc_type == 'pdf' %}pdf text-danger{% elif doc.doc_type == 'docx' %}word text-primary{% else %}text text-secondary{% endif %}"
-                                       style="font-size:0.85rem; flex-shrink:0"></i>
-                                    <span class="small text-truncate" style="max-width:130px;"
+                                       style="font-size:0.9rem; flex-shrink:0"></i>
+                                    <span style="font-size:0.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px"
                                           title="{{ doc.title }}">{{ doc.title }}</span>
                                 </div>
                                 <form method="post" action="{% url 'ai_assistant:delete_document' doc.pk %}">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-link btn-sm p-0 text-danger"
+                                    <button type="submit" class="btn btn-link btn-sm p-0 text-danger opacity-50"
+                                            style="font-size:0.8rem"
                                             onclick="return confirm('Delete document?')">
-                                        <i class="bi bi-x" style="font-size:0.85rem"></i>
+                                        <i class="bi bi-x-lg"></i>
                                     </button>
                                 </form>
                             </div>
@@ -146,41 +146,40 @@
                         {% endfor %}
                     {% else %}
                         <div class="text-center text-muted py-5">
-                            <i class="bi bi-robot fs-1 d-block mb-3 text-primary"></i>
-                            <p class="fw-semibold">Ask me about your Mind Nest data!</p>
-                            <p class="small text-muted mb-3">
-                                I can only answer based on your notes, tasks, and resources.
+                            <div class="empty-state-icon mx-auto mb-4">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <p class="fw-semibold mb-1" style="color:var(--text)">Ask me about your study data</p>
+                            <p class="small mb-4" style="color:var(--text-muted);max-width:300px;margin:0 auto 16px">
+                                I answer only from your notes, tasks, resources, and uploaded documents.
                             </p>
-                            <!-- User data stats -->
-                            <div class="d-flex justify-content-center gap-3 mb-4">
+                            <!-- Data stats -->
+                            <div class="d-flex justify-content-center gap-4 mb-4">
                                 <div class="text-center">
-                                    <div class="fw-bold text-primary">{{ notes_count }}</div>
-                                    <div class="small text-muted">Notes</div>
+                                    <div class="fw-bold" style="color:var(--primary);font-size:1.2rem">{{ notes_count }}</div>
+                                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Notes</div>
                                 </div>
                                 <div class="text-center">
-                                    <div class="fw-bold text-primary">{{ tasks_count }}</div>
-                                    <div class="small text-muted">Tasks</div>
+                                    <div class="fw-bold" style="color:var(--primary);font-size:1.2rem">{{ tasks_count }}</div>
+                                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Tasks</div>
                                 </div>
                                 <div class="text-center">
-                                    <div class="fw-bold text-primary">{{ resources_count }}</div>
-                                    <div class="small text-muted">Resources</div>
+                                    <div class="fw-bold" style="color:var(--primary);font-size:1.2rem">{{ resources_count }}</div>
+                                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">Resources</div>
                                 </div>
                             </div>
-                            <div class="d-flex flex-wrap gap-2 justify-content-center mt-3">
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    Summarize my notes
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                <button class="suggestion-btn filter-pill" style="font-size:0.78rem">
+                                    <i class="bi bi-journal-text"></i> Summarize my notes
                                 </button>
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    Generate quiz from my notes
+                                <button class="suggestion-btn filter-pill" style="font-size:0.78rem">
+                                    <i class="bi bi-patch-question"></i> Generate quiz
                                 </button>
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    What tasks are pending?
+                                <button class="suggestion-btn filter-pill" style="font-size:0.78rem">
+                                    <i class="bi bi-check2-circle"></i> Pending tasks
                                 </button>
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    Create flashcards from my notes
-                                </button>
-                                <button class="btn btn-outline-primary btn-sm suggestion-btn">
-                                    What resources do I have?
+                                <button class="suggestion-btn filter-pill" style="font-size:0.78rem">
+                                    <i class="bi bi-card-list"></i> Create flashcards
                                 </button>
                             </div>
                         </div>

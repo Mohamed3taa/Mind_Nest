@@ -17,8 +17,8 @@
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-icon" style="background:rgba(137,180,250,0.15)">
-                    <i class="bi bi-folder2 text-primary"></i>
+                <div class="stat-icon stat-icon-teal">
+                    <i class="bi bi-folder2"></i>
                 </div>
                 <div>
                     <div class="stat-value">{{ total }}</div>
@@ -28,8 +28,8 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-icon" style="background:rgba(249,226,175,0.15)">
-                    <i class="bi bi-star-fill" style="color:#f9e2af"></i>
+                <div class="stat-icon stat-icon-orange">
+                    <i class="bi bi-star-fill"></i>
                 </div>
                 <div>
                     <div class="stat-value">{{ fav_count }}</div>
@@ -75,15 +75,15 @@
     </div>
 
     <!-- Type Filter Pills -->
-    <div class="d-flex gap-2 flex-wrap mb-4">
+    <div class="filter-pills mb-4">
         <a href="{% url 'resources:resource_list' %}"
-           class="btn btn-sm {% if not current_type %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-            All
+           class="filter-pill {% if not current_type %}active{% endif %}">
+            <i class="bi bi-grid-fill"></i> All
         </a>
         {% for rt in resource_types %}
         <a href="?type={{ rt.pk }}"
-           class="btn btn-sm {% if current_type == rt.pk|stringformat:'s' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
-            <i class="{{ rt.icon }} me-1"></i>{{ rt.name }}
+           class="filter-pill {% if current_type == rt.pk|stringformat:'s' %}active{% endif %}">
+            <i class="{{ rt.icon }}"></i> {{ rt.name }}
         </a>
         {% endfor %}
     </div>
@@ -94,37 +94,37 @@
         {% for res in resources %}
         <div class="col-md-6 col-lg-4 resource-item">
             <div class="card resource-card h-100">
-                <div class="card-body d-flex flex-column">
+                <div class="card-body d-flex flex-column p-3">
 
                     <!-- Header -->
                     <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-grow-1 min-width-0">
                             {% if res.resource_type %}
-                            <div class="resource-type-icon">
+                            <div class="resource-type-icon flex-shrink-0">
                                 <i class="{{ res.resource_type.icon }}"></i>
                             </div>
                             {% endif %}
-                            <h6 class="fw-semibold mb-0 resource-title">{{ res.title }}</h6>
+                            <h6 class="fw-semibold mb-0 resource-title text-truncate" style="font-size:0.875rem">{{ res.title }}</h6>
                         </div>
-                        <!-- Favorite btn -->
-                        <button class="btn btn-link btn-sm p-0 fav-btn"
+                        <button class="btn fav-btn ms-1 flex-shrink-0"
                                 data-pk="{{ res.pk }}"
                                 title="{% if res.is_favorite %}Remove from favorites{% else %}Add to favorites{% endif %}">
-                            <i class="bi bi-star{% if res.is_favorite %}-fill text-warning{% endif %}"></i>
+                            <i class="bi bi-star{% if res.is_favorite %}-fill{% endif %}"
+                               style="color:{% if res.is_favorite %}var(--accent){% else %}var(--border){% endif %};font-size:1rem"></i>
                         </button>
                     </div>
 
                     <!-- Description -->
                     {% if res.description %}
-                    <p class="text-muted small flex-grow-1 resource-desc">{{ res.description|truncatechars:100 }}</p>
+                    <p class="text-muted flex-grow-1 resource-desc mb-2" style="font-size:0.8rem;line-height:1.5">{{ res.description|truncatechars:90 }}</p>
                     {% else %}
-                    <p class="text-muted small flex-grow-1 fst-italic">No description.</p>
+                    <p class="flex-grow-1" style="font-size:0.8rem;color:var(--border);font-style:italic">No description</p>
                     {% endif %}
 
                     <!-- Type badge -->
                     {% if res.resource_type %}
                     <div class="mb-2">
-                        <span class="badge bg-secondary rounded-pill">
+                        <span style="background:rgba(13,148,136,0.08);color:var(--primary);padding:3px 10px;border-radius:99px;font-size:0.72rem;font-weight:600">
                             <i class="{{ res.resource_type.icon }} me-1"></i>{{ res.resource_type.name }}
                         </span>
                     </div>
@@ -132,19 +132,22 @@
 
                     <!-- Footer -->
                     <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
-                        <span class="text-muted" style="font-size:0.75rem">
+                        <span style="font-size:0.72rem;color:var(--text-muted)">
                             <i class="bi bi-clock me-1"></i>{{ res.created_at|timesince }} ago
                         </span>
                         <div class="d-flex gap-1">
-                            <a href="{{ res.link }}" target="_blank" class="btn btn-sm btn-primary">
+                            <a href="{{ res.link }}" target="_blank" class="btn btn-sm btn-primary"
+                               style="padding:4px 12px;font-size:0.78rem">
                                 <i class="bi bi-box-arrow-up-right me-1"></i>Open
                             </a>
-                            <button class="btn btn-sm btn-outline-primary"
+                            <button class="btn btn-sm btn-outline-secondary"
+                                    style="padding:4px 8px"
                                     data-bs-toggle="modal"
                                     data-bs-target="#editResourceModal{{ res.pk }}">
                                 <i class="bi bi-pencil"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-danger"
+                                    style="padding:4px 8px"
                                     data-bs-toggle="modal"
                                     data-bs-target="#deleteResourceModal{{ res.pk }}">
                                 <i class="bi bi-trash"></i>
@@ -232,10 +235,15 @@
     </div>
 
     {% else %}
-    <div class="card p-5 text-center text-muted">
-        <i class="bi bi-folder-plus fs-1 d-block mb-3"></i>
+    <div class="card empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-folder-plus"></i>
+        </div>
         <h5>No resources found</h5>
-        <p>Click "Add Resource" to save your first learning resource!</p>
+        <p>Save links to articles, videos, courses, and more.</p>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addResourceModal">
+            <i class="bi bi-plus-lg me-1"></i>Add Your First Resource
+        </button>
     </div>
     {% endif %}
 

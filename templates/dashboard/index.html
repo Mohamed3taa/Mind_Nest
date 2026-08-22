@@ -103,17 +103,24 @@
                 <h6 class="fw-semibold mb-3"><i class="bi bi-bar-chart me-2"></i>Task Progress</h6>
                 <div class="text-center my-3">
                     <div class="position-relative d-inline-block">
-                        <svg width="120" height="120" viewBox="0 0 120 120">
-                            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/>
-                            <circle cx="60" cy="60" r="50" fill="none" stroke="#89b4fa" stroke-width="10"
-                                stroke-dasharray="{{ completion_pct|floatformat:0 }} 100"
-                                stroke-dasharray="{% widthratio completion_pct 100 314 %} 314"
+                        <svg width="130" height="130" viewBox="0 0 130 130">
+                            <circle cx="65" cy="65" r="54" fill="none" stroke="var(--border)" stroke-width="10"/>
+                            <circle cx="65" cy="65" r="54" fill="none"
+                                stroke="url(#progressGrad)"
+                                stroke-width="10"
                                 stroke-linecap="round"
-                                transform="rotate(-90 60 60)"/>
+                                stroke-dasharray="{% widthratio completion_pct 100 339 %} 339"
+                                transform="rotate(-90 65 65)"/>
+                            <defs>
+                                <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#0D9488"/>
+                                    <stop offset="100%" style="stop-color:#14B8A6"/>
+                                </linearGradient>
+                            </defs>
                         </svg>
                         <div class="position-absolute top-50 start-50 translate-middle text-center">
-                            <div class="fw-bold fs-4">{{ completion_pct }}%</div>
-                            <div class="text-muted" style="font-size:0.7rem">Done</div>
+                            <div class="fw-bold" style="font-size:1.5rem;letter-spacing:-1px">{{ completion_pct }}%</div>
+                            <div class="text-muted" style="font-size:0.68rem;font-weight:600;letter-spacing:0.5px;text-transform:uppercase">Done</div>
                         </div>
                     </div>
                 </div>
@@ -147,7 +154,7 @@
                         <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
                             <div>
                                 <span class="fw-medium">{{ task.title }}</span>
-                                <div class="text-muted small">
+                                <div class="text-muted small mt-1">
                                     <i class="bi bi-calendar3 me-1"></i>{{ task.due_date }}
                                 </div>
                             </div>
@@ -158,9 +165,11 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-calendar-check fs-2 d-block mb-2"></i>
-                        No upcoming tasks this week!
+                    <div class="text-center py-4">
+                        <div class="empty-state-icon mx-auto mb-3" style="width:52px;height:52px;font-size:1.4rem">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <p class="text-muted small mb-0">No upcoming tasks this week — you're all caught up!</p>
                     </div>
                 {% endif %}
             </div>
