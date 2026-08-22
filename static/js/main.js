@@ -68,6 +68,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (href && href !== '/' && currentPath.startsWith(href)) {
             link.classList.add('active');
         }
+        // Close mobile sidebar on link click
+        link.addEventListener('click', function () {
+            if (window.innerWidth <= 768 && sidebar) {
+                sidebar.classList.remove('open');
+                if (overlay) overlay.classList.remove('show');
+            }
+        });
     });
 
     // ── Auto-dismiss alerts ──────────────────────────────────

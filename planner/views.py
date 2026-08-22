@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+from django.utils import timezone
 from .models import Task
 from .forms import TaskForm
 
@@ -40,6 +41,7 @@ def task_list(request):
         'current_priority': priority,
         'current_status':   status,
         'current_search':   search,
+        'today':            timezone.now().date(),
     }
     return render(request, 'planner/task_list.html', context)
 
