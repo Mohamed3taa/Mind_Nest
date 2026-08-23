@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'notes',
     'resources',
     'ai_assistant',
+    'quizzes',
 ]
 
 MIDDLEWARE = [

@@ -1,18 +1,12 @@
-import os
 import json
-from dotenv import load_dotenv
-load_dotenv()
-
-from google import genai
 from google.genai import types
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from .gemini import gemini_client as client   # shared client — avoids duplicate init
 from .models import AIConversation, AIMessage, UploadedDocument
-
-client = genai.Client(api_key=os.getenv('AI_API_KEY'))
 
 
 def extract_text_from_file(file, doc_type):

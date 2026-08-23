@@ -11,6 +11,7 @@ urlpatterns = [
     path('planner/', include('planner.urls')),
     path('notes/', include('notes.urls')),
     path('resources/', include('resources.urls')),
-    path('ai/', include('ai_assistant.urls')),
+    path('ai/',      include('ai_assistant.urls')),
+    path('quizzes/', include('quizzes.urls')),
     path('', lambda request: redirect('dashboard:index'), name='home'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

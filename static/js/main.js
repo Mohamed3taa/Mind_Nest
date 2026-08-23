@@ -142,16 +142,6 @@ document.addEventListener('DOMContentLoaded', function () {
         item.style.transition = 'padding-left 0.2s ease, background 0.2s ease';
     });
 
-    // ── Modal animations ─────────────────────────────────────
-    document.querySelectorAll('.modal').forEach(function (modal) {
-        modal.addEventListener('show.bs.modal', function () {
-            const dialog = this.querySelector('.modal-dialog');
-            if (dialog) {
-                dialog.style.transition = 'transform 0.25s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.2s ease';
-            }
-        });
-    });
-
     // ── Button ripple effect ─────────────────────────────────
     document.querySelectorAll('.btn').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -190,6 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Tooltip init ─────────────────────────────────────────
     document.querySelectorAll('[title]').forEach(function (el) {
         if (el.closest('.sidebar')) return; // skip sidebar items
+        if (el.getAttribute('data-bs-toggle')) return; // skip modal/dropdown/tab triggers
         try {
             new bootstrap.Tooltip(el, { trigger: 'hover', delay: { show: 400, hide: 100 } });
         } catch (_) {}

@@ -1,0 +1,548 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }} — Take Quiz — Mind Nest{% endblock %}
+{% block nav_quizzes %}active{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Quiz Take — specific styles ─────────────────────────────────────────── */
+
+.quiz-take-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Top progress bar */
+.quiz-progress-bar-track {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+.quiz-progress-bar-fill {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 99px;
+    transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Question card */
+.question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.25s ease both;
+}
+
+.question-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+}
+
+/* Answer options */
+.answer-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--border);
+    background: var(--surface-2);
+    cursor: pointer;
+    transition: all var(--transition);
+    margin-bottom: 0.65rem;
+    font-size: 0.92rem;
+    color: var(--text);
+    user-select: none;
+    -webkit-user-select: none;
+}
+.answer-option:hover {
+    border-color: var(--primary-light);
+    background: rgba(13,148,136,0.05);
+    transform: translateX(3px);
+}
+.answer-option.selected {
+    border-color: var(--primary);
+    background: rgba(13,148,136,0.1);
+    color: var(--primary-dark);
+    font-weight: 500;
+}
+.answer-option input[type="radio"] {
+    accent-color: var(--primary);
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+/* True/False special styling */
+.tf-option-true.selected  { border-color: var(--success); background: rgba(16,185,129,0.1); color: var(--success); }
+.tf-option-false.selected { border-color: var(--danger);  background: rgba(239,68,68,0.1);  color: var(--danger);  }
+
+/* Navigation */
+.quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Question dots navigator */
+.q-dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+.q-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: var(--surface-2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+}
+.q-dot:hover             { border-color: var(--primary-light); color: var(--primary); }
+.q-dot.answered          { border-color: var(--primary); background: var(--primary); color: #fff; }
+.q-dot.current           { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(234,88,12,0.2); }
+.q-dot.answered.current  { border-color: var(--accent); background: var(--primary); box-shadow: 0 0 0 3px rgba(234,88,12,0.2); }
+
+/* Submit overlay */
+.submit-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s, visibility 0.25s;
+}
+.submit-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+.submit-overlay-box {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+.submit-overlay.show .submit-overlay-box {
+    transform: translateY(0);
+}
+
+/* Warn before leaving */
+.leave-warn {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1.25rem;
+    box-shadow: var(--card-shadow-hover);
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: none;
+    z-index: 1000;
+}
+
+@media (max-width: 576px) {
+    .question-card { padding: 1.25rem; }
+    .quiz-nav      { flex-direction: column; }
+    .quiz-nav .btn { width: 100%; }
+    .q-dots        { gap: 4px; }
+    .q-dot         { width: 24px; height: 24px; font-size: 0.65rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quiz-take-wrap">
+
+    <!-- Header strip -->
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-1">
+        <div>
+            <a href="{% url 'quizzes:quiz_detail' quiz.pk %}"
+               class="text-decoration-none text-muted small" id="exitLink">
+                <i class="bi bi-x-lg me-1"></i>Exit Quiz
+            </a>
+        </div>
+        <div class="text-center">
+            <span class="fw-semibold" style="font-size:0.9rem;color:var(--text)">
+                {{ quiz.title|truncatechars:40 }}
+            </span>
+        </div>
+        <div class="text-end">
+            <span class="badge"
+                  style="background:rgba(13,148,136,0.1);color:var(--primary);font-size:0.75rem"
+                  id="progressLabel">1 / {{ question_count }}</span>
+        </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="quiz-progress-bar-track mb-1">
+        <div class="quiz-progress-bar-fill" id="progressBar" style="width:0%"></div>
+    </div>
+    <div class="d-flex justify-content-between mb-4" style="font-size:0.72rem;color:var(--text-muted)">
+        <span id="answeredCount">0 answered</span>
+        <span>{{ question_count }} questions</span>
+    </div>
+
+    <!-- Question card (rendered by JS) -->
+    <div id="questionCard" class="question-card">
+        <!-- populated by renderQuestion() -->
+    </div>
+
+    <!-- Question dot navigator -->
+    <div class="q-dots mb-4" id="qDots">
+        <!-- populated by JS -->
+    </div>
+
+    <!-- Navigation buttons -->
+    <div class="quiz-nav mb-5">
+        <button class="btn btn-outline-secondary" id="btnPrev" disabled>
+            <i class="bi bi-chevron-left me-1"></i>Previous
+        </button>
+        <button class="btn btn-outline-primary" id="btnNext">
+            Next<i class="bi bi-chevron-right ms-1"></i>
+        </button>
+        <button class="btn btn-success d-none" id="btnSubmit">
+            <i class="bi bi-check2-circle me-1"></i>Submit Quiz
+        </button>
+    </div>
+
+</div><!-- /.quiz-take-wrap -->
+
+<!-- Submit Confirmation Overlay -->
+<div class="submit-overlay" id="submitOverlay">
+    <div class="submit-overlay-box">
+        <div style="font-size:2.5rem;margin-bottom:0.75rem">📝</div>
+        <h5 class="fw-bold mb-2">Ready to submit?</h5>
+        <p class="text-muted mb-1" style="font-size:0.9rem" id="submitSummary"></p>
+        <p class="text-muted mb-4" style="font-size:0.85rem" id="unansweredWarn"></p>
+        <div class="d-flex gap-3 justify-content-center">
+            <button class="btn btn-outline-secondary" id="btnCancelSubmit">
+                <i class="bi bi-arrow-left me-1"></i>Keep Going
+            </button>
+            <button class="btn btn-success" id="btnConfirmSubmit">
+                <i class="bi bi-check2-circle me-1"></i>Submit Now
+            </button>
+        </div>
+        <div id="submitSpinner" class="mt-3 d-none">
+            <div class="spinner-border spinner-border-sm text-success me-2"></div>
+            <span class="text-muted small">Saving your results…</span>
+        </div>
+        <div id="submitError" class="alert alert-danger mt-3 d-none small"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    'use strict';
+
+    /* ── Data from server ─────────────────────────────────────────────────── */
+    const QUESTIONS   = {{ questions_json|safe }};
+    const TOTAL       = QUESTIONS.length;
+    const SUBMIT_URL  = '{{ submit_url }}';
+    const CSRF        = '{{ csrf_token }}';
+    const EXIT_URL    = '{% url "quizzes:quiz_detail" quiz.pk %}';
+
+    /* ── State ────────────────────────────────────────────────────────────── */
+    let currentIdx = 0;               // 0-based
+    const userAnswers = {};           // { question_id: answer_id | null }
+
+    /* ── DOM refs ─────────────────────────────────────────────────────────── */
+    const card          = document.getElementById('questionCard');
+    const progressBar   = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+    const answeredCount = document.getElementById('answeredCount');
+    const qDots         = document.getElementById('qDots');
+    const btnPrev       = document.getElementById('btnPrev');
+    const btnNext       = document.getElementById('btnNext');
+    const btnSubmit     = document.getElementById('btnSubmit');
+    const overlay       = document.getElementById('submitOverlay');
+    const btnCancel     = document.getElementById('btnCancelSubmit');
+    const btnConfirm    = document.getElementById('btnConfirmSubmit');
+    const submitSpinner = document.getElementById('submitSpinner');
+    const submitError   = document.getElementById('submitError');
+    const exitLink      = document.getElementById('exitLink');
+
+    /* ── Initialise ──────────────────────────────────────────────────────── */
+    buildDots();
+    renderQuestion(0);
+
+    /* ── Render a question ───────────────────────────────────────────────── */
+    function renderQuestion(idx) {
+        currentIdx = idx;
+        const q = QUESTIONS[idx];
+
+        // Build answer options HTML
+        let answersHtml = '';
+        q.answers.forEach(function (a) {
+            const isTF      = q.type === 'true_false';
+            const tfClass   = isTF
+                ? (a.text === 'True' ? ' tf-option-true' : ' tf-option-false')
+                : '';
+            const selected  = userAnswers[q.id] === a.id ? ' selected' : '';
+            const checked   = selected ? ' checked' : '';
+            const icon      = isTF
+                ? (a.text === 'True'
+                    ? '<i class="bi bi-check-circle me-1"></i>'
+                    : '<i class="bi bi-x-circle me-1"></i>')
+                : '';
+
+            answersHtml += `
+                <label class="answer-option${tfClass}${selected}" data-answer-id="${a.id}">
+                    <input type="radio" name="answer_${q.id}" value="${a.id}"${checked}>
+                    ${icon}${escHtml(a.text)}
+                </label>`;
+        });
+
+        const typeBadge = q.type === 'true_false'
+            ? '<span class="badge ms-2" style="background:rgba(59,130,246,0.1);color:var(--info);font-size:0.7rem">True/False</span>'
+            : '<span class="badge ms-2" style="background:rgba(13,148,136,0.1);color:var(--primary);font-size:0.7rem">Multiple Choice</span>';
+
+        card.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <span class="small text-muted">Question ${idx + 1} of ${TOTAL}</span>
+                ${typeBadge}
+            </div>
+            <div class="question-text">${escHtml(q.text)}</div>
+            <div id="answersContainer">${answersHtml}</div>`;
+
+        // Attach click handlers to newly rendered labels
+        card.querySelectorAll('.answer-option').forEach(function (label) {
+            label.addEventListener('click', function () {
+                onAnswerClick(label, q.id);
+            });
+        });
+
+        // Sync UI
+        updateProgress();
+        updateDots();
+        updateNavButtons();
+    }
+
+    /* ── Answer click ────────────────────────────────────────────────────── */
+    function onAnswerClick(label, questionId) {
+        const answerId = parseInt(label.dataset.answerId, 10);
+
+        // Update state
+        userAnswers[questionId] = answerId;
+
+        // Update visual selection in current card
+        card.querySelectorAll('.answer-option').forEach(function (l) {
+            l.classList.remove('selected');
+            l.querySelector('input[type="radio"]').checked = false;
+        });
+        label.classList.add('selected');
+        label.querySelector('input[type="radio"]').checked = true;
+
+        updateProgress();
+        updateDots();
+        updateNavButtons();
+    }
+
+    /* ── Progress ────────────────────────────────────────────────────────── */
+    function countAnswered() {
+        return Object.keys(userAnswers).filter(function (k) {
+            return userAnswers[k] !== null;
+        }).length;
+    }
+
+    function updateProgress() {
+        const done = countAnswered();
+        const pct  = Math.round((currentIdx + 1) / TOTAL * 100);
+        progressBar.style.width   = pct + '%';
+        progressLabel.textContent = (currentIdx + 1) + ' / ' + TOTAL;
+        answeredCount.textContent = done + ' answered';
+    }
+
+    /* ── Question dots ───────────────────────────────────────────────────── */
+    function buildDots() {
+        qDots.innerHTML = '';
+        QUESTIONS.forEach(function (q, i) {
+            const dot = document.createElement('button');
+            dot.className    = 'q-dot';
+            dot.type         = 'button';
+            dot.textContent  = i + 1;
+            dot.title        = 'Question ' + (i + 1);
+            dot.addEventListener('click', function () { renderQuestion(i); });
+            dot.id = 'dot-' + i;
+            qDots.appendChild(dot);
+        });
+    }
+
+    function updateDots() {
+        QUESTIONS.forEach(function (q, i) {
+            const dot = document.getElementById('dot-' + i);
+            if (!dot) return;
+            dot.classList.toggle('answered', userAnswers[q.id] !== undefined);
+            dot.classList.toggle('current',  i === currentIdx);
+        });
+    }
+
+    /* ── Navigation buttons ──────────────────────────────────────────────── */
+    function updateNavButtons() {
+        const isLast = currentIdx === TOTAL - 1;
+        btnPrev.disabled = currentIdx === 0;
+        btnNext.classList.toggle('d-none',   isLast);
+        btnSubmit.classList.toggle('d-none', !isLast);
+    }
+
+    btnPrev.addEventListener('click', function () {
+        if (currentIdx > 0) renderQuestion(currentIdx - 1);
+    });
+
+    btnNext.addEventListener('click', function () {
+        if (currentIdx < TOTAL - 1) renderQuestion(currentIdx + 1);
+    });
+
+    /* ── Submit flow ─────────────────────────────────────────────────────── */
+    btnSubmit.addEventListener('click', openConfirmOverlay);
+
+    function openConfirmOverlay() {
+        const done       = countAnswered();
+        const unanswered = TOTAL - done;
+
+        document.getElementById('submitSummary').textContent =
+            'You answered ' + done + ' of ' + TOTAL + ' questions.';
+
+        const warnEl = document.getElementById('unansweredWarn');
+        if (unanswered > 0) {
+            warnEl.innerHTML =
+                '<i class="bi bi-exclamation-triangle me-1 text-warning"></i>' +
+                unanswered + ' unanswered question' +
+                (unanswered > 1 ? 's' : '') +
+                ' will be marked incorrect.';
+        } else {
+            warnEl.innerHTML =
+                '<i class="bi bi-check-circle me-1 text-success"></i>' +
+                'All questions answered!';
+        }
+
+        submitError.classList.add('d-none');
+        submitSpinner.classList.add('d-none');
+        btnConfirm.disabled = false;
+        overlay.classList.add('show');
+    }
+
+    btnCancel.addEventListener('click', function () {
+        overlay.classList.remove('show');
+    });
+
+    // Close overlay if clicking the backdrop (not the box)
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) overlay.classList.remove('show');
+    });
+
+    btnConfirm.addEventListener('click', submitQuiz);
+
+    async function submitQuiz() {
+        submitError.classList.add('d-none');
+        submitSpinner.classList.remove('d-none');
+        btnConfirm.disabled = true;
+
+        // Build answers payload: { "<question_id>": <answer_id or null> }
+        const answersPayload = {};
+        QUESTIONS.forEach(function (q) {
+            answersPayload[String(q.id)] =
+                userAnswers[q.id] !== undefined ? userAnswers[q.id] : null;
+        });
+
+        const startTime = window.__quizStartTime || Date.now();
+        const timeTaken = Math.round((Date.now() - startTime) / 1000);
+
+        try {
+            const resp = await fetch(SUBMIT_URL, {
+                method:  'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken':  CSRF,
+                },
+                body: JSON.stringify({
+                    answers:    answersPayload,
+                    time_taken: timeTaken,
+                }),
+            });
+
+            const data = await resp.json();
+
+            if (!resp.ok || !data.success) {
+                showSubmitError(data.error || 'Submission failed. Please try again.');
+                return;
+            }
+
+            // Success — disable leave-warning and navigate to result page
+            window.__quizSubmitted = true;
+            window.location.href = data.result_url;
+
+        } catch (err) {
+            showSubmitError('Network error. Please check your connection and try again.');
+        }
+    }
+
+    function showSubmitError(msg) {
+        submitSpinner.classList.add('d-none');
+        btnConfirm.disabled = false;
+        submitError.textContent = msg;
+        submitError.classList.remove('d-none');
+    }
+
+    /* ── Warn before leaving mid-quiz ───────────────────────────────────── */
+    window.__quizStartTime  = Date.now();
+    window.__quizSubmitted  = false;
+
+    window.addEventListener('beforeunload', function (e) {
+        if (!window.__quizSubmitted && countAnswered() > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    exitLink.addEventListener('click', function (e) {
+        if (!window.__quizSubmitted && countAnswered() > 0) {
+            if (!confirm('Leave this quiz? Your progress will be lost.')) {
+                e.preventDefault();
+            }
+        }
+    });
+
+    /* ── Utility ──────────────────────────────────────────────────────────── */
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+})();
+</script>
+{% endblock %}

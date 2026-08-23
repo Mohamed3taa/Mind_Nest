@@ -1,0 +1,497 @@
+{% extends 'base.html' %}
+{% block title %}Quizzes — Mind Nest{% endblock %}
+{% block nav_quizzes %}active{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-title"><i class="bi bi-patch-question me-2"></i>Quizzes</h1>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateQuizModal">
+                <i class="bi bi-stars me-1"></i>Generate Quiz
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="card p-3 text-center">
+                <div style="font-size:1.8rem;font-weight:700;color:var(--primary)">{{ total_quizzes }}</div>
+                <div class="text-muted small">Total Quizzes</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card p-3 text-center">
+                <div style="font-size:1.8rem;font-weight:700;color:var(--accent)">{{ total_attempts }}</div>
+                <div class="text-muted small">Total Attempts</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card p-3 text-center">
+                <div style="font-size:1.8rem;font-weight:700;color:var(--success)">
+                    {% if best_pct %}{{ best_pct }}%{% else %}—{% endif %}
+                </div>
+                <div class="text-muted small">Best Score</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card p-3 mb-4">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <input type="text" name="search" class="form-control"
+                       placeholder="Search quizzes..." value="{{ current_search }}">
+            </div>
+            <div class="col-md-4">
+                <select name="difficulty" class="form-select">
+                    <option value="">All Difficulties</option>
+                    <option value="easy"   {% if current_diff == 'easy'   %}selected{% endif %}>Easy</option>
+                    <option value="medium" {% if current_diff == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="hard"   {% if current_diff == 'hard'   %}selected{% endif %}>Hard</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search me-1"></i>Filter
+                </button>
+                {% if current_search or current_diff %}
+                <a href="{% url 'quizzes:quiz_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-lg"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+
+    <!-- Quiz Cards -->
+    {% if quizzes %}
+    <div class="row g-3">
+        {% for quiz in quizzes %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100" style="border-top: 3px solid
+                {% if quiz.difficulty == 'easy' %}var(--success)
+                {% elif quiz.difficulty == 'hard' %}var(--danger)
+                {% else %}var(--warning){% endif %}">
+                <div class="card-body d-flex flex-column p-3">
+
+                    <!-- Title + Difficulty Badge -->
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h6 class="fw-semibold mb-0" style="font-size:0.95rem;line-height:1.3">
+                            {{ quiz.title }}
+                        </h6>
+                        <span class="badge ms-2 flex-shrink-0"
+                              style="font-size:0.7rem;
+                              {% if quiz.difficulty == 'easy' %}background:rgba(16,185,129,0.12);color:var(--success);
+                              {% elif quiz.difficulty == 'hard' %}background:rgba(239,68,68,0.12);color:var(--danger);
+                              {% else %}background:rgba(245,158,11,0.12);color:var(--warning);{% endif %}">
+                            {{ quiz.get_difficulty_display }}
+                        </span>
+                    </div>
+
+                    <!-- Source -->
+                    <div class="d-flex align-items-center gap-1 mb-2" style="font-size:0.78rem;color:var(--text-muted)">
+                        <i class="bi bi-
+                            {% if quiz.source_type == 'notes' %}journal-text
+                            {% elif quiz.source_type == 'document' %}file-earmark-text
+                            {% else %}pencil{% endif %}"></i>
+                        <span>
+                            {{ quiz.get_source_type_display }}
+                            {% if quiz.source_ref %} · {{ quiz.source_ref|truncatechars:30 }}{% endif %}
+                        </span>
+                    </div>
+
+                    <!-- Meta chips -->
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span style="background:rgba(13,148,136,0.08);color:var(--primary);
+                                     padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:500">
+                            <i class="bi bi-question-circle me-1"></i>{{ quiz.question_count }} questions
+                        </span>
+                        <span style="background:rgba(71,85,105,0.08);color:var(--text-muted);
+                                     padding:3px 10px;border-radius:99px;font-size:0.75rem">
+                            <i class="bi bi-arrow-repeat me-1"></i>{{ quiz.attempt_count }} attempts
+                        </span>
+                        {% if quiz.best_score is not None %}
+                        <span style="background:rgba(16,185,129,0.08);color:var(--success);
+                                     padding:3px 10px;border-radius:99px;font-size:0.75rem;font-weight:500">
+                            <i class="bi bi-trophy me-1"></i>Best: {{ quiz.best_score }}%
+                        </span>
+                        {% endif %}
+                        {% if quiz.time_limit %}
+                        <span style="background:rgba(234,88,12,0.08);color:var(--accent);
+                                     padding:3px 10px;border-radius:99px;font-size:0.75rem">
+                            <i class="bi bi-clock me-1"></i>{{ quiz.time_limit|floatformat:0 }}s
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
+                        <span style="font-size:0.72rem;color:var(--text-muted)">
+                            {{ quiz.created_at|timesince }} ago
+                        </span>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'quizzes:quiz_detail' quiz.pk %}"
+                               class="btn btn-sm btn-outline-secondary" title="Details"
+                               style="padding:3px 8px">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <!-- Take Quiz — placeholder until Step 4 -->
+                            <a href="{% url 'quizzes:quiz_detail' quiz.pk %}"
+                               class="btn btn-sm btn-primary"
+                               style="padding:3px 10px;font-size:0.8rem">
+                                <i class="bi bi-play-fill me-1"></i>Take
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% include 'includes/pagination.html' with page_obj=quizzes %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="card empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-patch-question"></i>
+        </div>
+        <h5>
+            {% if current_search or current_diff %}
+                No quizzes match your filters.
+            {% else %}
+                No quizzes yet
+            {% endif %}
+        </h5>
+        <p>
+            {% if current_search or current_diff %}
+                Try a different search or difficulty.
+            {% else %}
+                Generate your first quiz from your notes and documents using the AI Assistant.
+            {% endif %}
+        </p>
+        {% if current_search or current_diff %}
+        <a href="{% url 'quizzes:quiz_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle me-1"></i>Clear Filters
+        </a>
+        {% else %}
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generateQuizModal">
+            <i class="bi bi-stars me-1"></i>Generate Your First Quiz
+        </button>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+<!-- Generate Quiz Modal — placed outside #wrapper so it is a direct <body> child -->
+{% block extra_js %}
+<div class="modal fade" id="generateQuizModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-stars me-2"></i>Generate Quiz with AI</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Step 1: Configure -->
+                <div id="genStep1">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Source</label>
+                            <select id="genSource" class="form-select">
+                                <option value="all">All my data (notes + documents)</option>
+                                <option value="notes">Notes only</option>
+                                <option value="document">Documents only</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Source reference <span class="text-muted fw-normal">(optional label)</span></label>
+                            <input type="text" id="genSourceRef" class="form-control"
+                                   placeholder="e.g. Python notes, lecture.pdf...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Number of questions</label>
+                            <input type="number" id="genCount" class="form-control"
+                                   value="5" min="1" max="20">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Difficulty</label>
+                            <select id="genDiff" class="form-select">
+                                <option value="medium">Medium</option>
+                                <option value="easy">Easy</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-medium">Question types</label>
+                            <select id="genTypes" class="form-select">
+                                <option value="both">Mixed (MC + T/F)</option>
+                                <option value="multiple_choice">Multiple Choice only</option>
+                                <option value="true_false">True / False only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="genError" class="alert alert-danger mt-3 d-none"></div>
+                </div>
+
+                <!-- Step 2: Preview -->
+                <div id="genStep2" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0 fw-semibold" id="genPreviewTitle"></h6>
+                        <span class="badge" style="background:rgba(13,148,136,0.1);color:var(--primary)"
+                              id="genPreviewCount"></span>
+                    </div>
+                    <div id="genPreviewQuestions" style="max-height:320px;overflow-y:auto"></div>
+                    <div class="row g-2 mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium">Quiz title</label>
+                            <input type="text" id="genFinalTitle" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium">Time limit</label>
+                            <select id="genTimeLimit" class="form-select">
+                                <option value="">No limit</option>
+                                <option value="60">1 min</option>
+                                <option value="120">2 min</option>
+                                <option value="300">5 min</option>
+                                <option value="600">10 min</option>
+                                <option value="900">15 min</option>
+                                <option value="1800">30 min</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="saveError" class="alert alert-danger mt-3 d-none"></div>
+                </div>
+
+                <!-- Loading -->
+                <div id="genLoading" class="text-center py-4 d-none">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted">Generating your quiz with AI…</p>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="genBtnBack"
+                        data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="genBtnGenerate">
+                    <i class="bi bi-stars me-1"></i>Generate
+                </button>
+                <button type="button" class="btn btn-success d-none" id="genBtnSave">
+                    <i class="bi bi-floppy me-1"></i>Save Quiz
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(function () {
+    const GENERATE_URL = "{% url 'quizzes:quiz_generate' %}";
+    const SAVE_URL     = "{% url 'quizzes:quiz_save' %}";
+    const CSRF         = "{{ csrf_token }}";
+
+    let generatedQuiz = null;
+
+    const step1      = document.getElementById('genStep1');
+    const step2      = document.getElementById('genStep2');
+    const loading    = document.getElementById('genLoading');
+    const genError   = document.getElementById('genError');
+    const saveError  = document.getElementById('saveError');
+    const btnGen     = document.getElementById('genBtnGenerate');
+    const btnSave    = document.getElementById('genBtnSave');
+    const btnBack    = document.getElementById('genBtnBack');
+
+    // Reset modal state on open
+    document.getElementById('generateQuizModal').addEventListener('show.bs.modal', resetModal);
+
+    function resetModal() {
+        showStep(1);
+        generatedQuiz = null;
+        genError.classList.add('d-none');
+        saveError.classList.add('d-none');
+    }
+
+    function showStep(n) {
+        step1.classList.toggle('d-none', n !== 1);
+        step2.classList.toggle('d-none', n !== 2);
+        loading.classList.add('d-none');
+        btnGen.classList.toggle('d-none', n !== 1);
+        btnSave.classList.toggle('d-none', n !== 2);
+        btnBack.textContent = n === 2 ? 'Back' : 'Cancel';
+    }
+
+    btnBack.addEventListener('click', function () {
+        if (!step2.classList.contains('d-none')) {
+            showStep(1);
+        }
+    });
+
+    // ── Generate ──────────────────────────────────────────────────────────────
+    btnGen.addEventListener('click', async function () {
+        genError.classList.add('d-none');
+
+        const numQ = parseInt(document.getElementById('genCount').value);
+        if (!numQ || numQ < 1 || numQ > 20) {
+            showError(genError, 'Number of questions must be between 1 and 20.');
+            return;
+        }
+
+        const typeSel = document.getElementById('genTypes').value;
+        const qTypes  = typeSel === 'both'
+            ? ['multiple_choice', 'true_false']
+            : [typeSel];
+
+        const payload = {
+            source:        document.getElementById('genSource').value,
+            source_ref:    document.getElementById('genSourceRef').value.trim(),
+            num_questions: numQ,
+            difficulty:    document.getElementById('genDiff').value,
+            q_types:       qTypes,
+        };
+
+        step1.classList.add('d-none');
+        loading.classList.remove('d-none');
+        btnGen.disabled = true;
+
+        try {
+            const resp = await fetch(GENERATE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF,
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || data.error) {
+                loading.classList.add('d-none');
+                step1.classList.remove('d-none');
+                showError(genError,
+                    data.error || 'Generation failed. Please try again.'
+                    + (data.details ? '<br>' + data.details.join('<br>') : '')
+                );
+                return;
+            }
+
+            generatedQuiz = data.quiz;
+            renderPreview(generatedQuiz);
+            showStep(2);
+
+        } catch (e) {
+            loading.classList.add('d-none');
+            step1.classList.remove('d-none');
+            showError(genError, 'Network error. Please try again.');
+        } finally {
+            btnGen.disabled = false;
+        }
+    });
+
+    // ── Render preview ────────────────────────────────────────────────────────
+    function renderPreview(quiz) {
+        document.getElementById('genPreviewTitle').textContent = quiz.title;
+        document.getElementById('genFinalTitle').value = quiz.title;
+        document.getElementById('genPreviewCount').textContent =
+            quiz.questions.length + ' questions';
+
+        const container = document.getElementById('genPreviewQuestions');
+        container.innerHTML = '';
+
+        quiz.questions.forEach(function (q, i) {
+            const div = document.createElement('div');
+            div.className = 'mb-3 p-3 rounded';
+            div.style.cssText = 'background:var(--surface-2);border:1px solid var(--border)';
+
+            const typeBadge = q.type === 'true_false'
+                ? '<span class="badge ms-2" style="background:rgba(59,130,246,0.1);color:var(--info);font-size:0.65rem">T/F</span>'
+                : '<span class="badge ms-2" style="background:rgba(13,148,136,0.1);color:var(--primary);font-size:0.65rem">MC</span>';
+
+            let answersHtml = q.answers.map(function (a) {
+                const icon = a.is_correct
+                    ? '<i class="bi bi-check-circle-fill text-success me-2"></i>'
+                    : '<i class="bi bi-circle text-muted me-2" style="opacity:.4"></i>';
+                return '<div class="d-flex align-items-center py-1" style="font-size:0.82rem">'
+                    + icon + a.text + '</div>';
+            }).join('');
+
+            div.innerHTML = '<div class="fw-medium mb-2" style="font-size:0.88rem">'
+                + '<span class="text-muted me-1">' + (i + 1) + '.</span>'
+                + q.text + typeBadge + '</div>'
+                + answersHtml;
+
+            container.appendChild(div);
+        });
+    }
+
+    // ── Save ──────────────────────────────────────────────────────────────────
+    btnSave.addEventListener('click', async function () {
+        saveError.classList.add('d-none');
+        if (!generatedQuiz) return;
+
+        const title = document.getElementById('genFinalTitle').value.trim();
+        if (!title) {
+            showError(saveError, 'Please enter a quiz title.');
+            return;
+        }
+
+        const timeLimitRaw = document.getElementById('genTimeLimit').value;
+        const timeLimit    = timeLimitRaw ? parseInt(timeLimitRaw) : null;
+
+        const meta = generatedQuiz._meta || {};
+
+        const payload = {
+            title:       title,
+            difficulty:  meta.difficulty  || 'medium',
+            source_type: meta.source_type || 'notes',
+            source_ref:  meta.source_ref  || '',
+            time_limit:  timeLimit,
+            questions:   generatedQuiz.questions,
+        };
+
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving…';
+
+        try {
+            const resp = await fetch(SAVE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': CSRF,
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await resp.json();
+
+            if (!resp.ok || !data.success) {
+                showError(saveError, data.error || 'Save failed. Please try again.');
+                return;
+            }
+
+            // Redirect to the new quiz detail page
+            window.location.href = '/quizzes/' + data.quiz_id + '/';
+
+        } catch (e) {
+            showError(saveError, 'Network error. Please try again.');
+        } finally {
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="bi bi-floppy me-1"></i>Save Quiz';
+        }
+    });
+
+    function showError(el, msg) {
+        el.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>' + msg;
+        el.classList.remove('d-none');
+    }
+})();
+</script>
+{% endblock %}
