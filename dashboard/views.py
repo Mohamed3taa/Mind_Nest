@@ -5,6 +5,7 @@ from planner.models import Task
 from notes.models import Note
 from resources.models import Resource
 from ai_assistant.models import AIConversation
+from quizzes.models import Quiz, QuizAttempt
 import json
 
 
@@ -18,6 +19,12 @@ def index(request):
     total_notes     = Note.objects.filter(user=user).count()
     total_resources = Resource.objects.filter(user=user).count()
     total_ai_chats  = AIConversation.objects.filter(user=user).count()
+
+    # Quiz stats
+    total_quizzes   = Quiz.objects.filter(user=user, is_active=True).count()
+    total_attempts  = QuizAttempt.objects.filter(user=user).count()
+    best_attempt    = QuizAttempt.objects.filter(user=user).order_by('-percentage').first()
+    quiz_best_score = round(best_attempt.percentage, 1) if best_attempt else None
 
     recent_tasks     = Task.objects.filter(user=user).order_by('-created_at')[:5]
     recent_notes     = Note.objects.filter(user=user).order_by('-updated_at')[:5]
@@ -54,9 +61,9 @@ def index(request):
     }
 
     overview_data = {
-        'labels': ['Tasks', 'Notes', 'Resources', 'AI Chats'],
-        'data': [total_tasks, total_notes, total_resources, total_ai_chats],
-        'colors': ['#89b4fa', '#cba6f7', '#a6e3a1', '#f9e2af']
+        'labels': ['Tasks', 'Notes', 'Resources', 'AI Chats', 'Quizzes'],
+        'data': [total_tasks, total_notes, total_resources, total_ai_chats, total_quizzes],
+        'colors': ['#89b4fa', '#cba6f7', '#a6e3a1', '#f9e2af', '#f38ba8']
     }
 
     context = {
@@ -66,6 +73,9 @@ def index(request):
         'total_notes':      total_notes,
         'total_resources':  total_resources,
         'total_ai_chats':   total_ai_chats,
+        'total_quizzes':    total_quizzes,
+        'total_attempts':   total_attempts,
+        'quiz_best_score':  quiz_best_score,
         'recent_tasks':     recent_tasks,
         'recent_notes':     recent_notes,
         'recent_resources': recent_resources,

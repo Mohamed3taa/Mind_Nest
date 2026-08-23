@@ -170,6 +170,28 @@
     z-index: 1000;
 }
 
+/* ── Timer ────────────────────────────────────────────────────── */
+.quiz-timer {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: rgba(13,148,136,0.1);
+    color: var(--primary);
+    transition: background 0.3s, color 0.3s;
+    font-variant-numeric: tabular-nums;
+}
+.quiz-timer.warn   { background: rgba(245,158,11,0.12); color: var(--warning); }
+.quiz-timer.urgent { background: rgba(239,68,68,0.12);  color: var(--danger);
+                     animation: timerPulse 0.8s ease-in-out infinite; }
+@keyframes timerPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.6; }
+}
+
 @media (max-width: 576px) {
     .question-card { padding: 1.25rem; }
     .quiz-nav      { flex-direction: column; }
@@ -197,7 +219,13 @@
             </span>
         </div>
         <div class="text-end">
-            <span class="badge"
+            {% if quiz.time_limit %}
+            <span class="quiz-timer" id="quizTimer">
+                <i class="bi bi-clock"></i>
+                <span id="timerDisplay">--:--</span>
+            </span>
+            {% endif %}
+            <span class="badge ms-2"
                   style="background:rgba(13,148,136,0.1);color:var(--primary);font-size:0.75rem"
                   id="progressLabel">1 / {{ question_count }}</span>
         </div>
@@ -518,6 +546,43 @@
     /* ── Warn before leaving mid-quiz ───────────────────────────────────── */
     window.__quizStartTime  = Date.now();
     window.__quizSubmitted  = false;
+
+    /* ── Countdown Timer ────────────────────────────────────────────────── */
+    const TIME_LIMIT = {{ quiz.time_limit|default:"null" }};   // seconds or null
+
+    if (TIME_LIMIT) {
+        let secondsLeft    = TIME_LIMIT;
+        const timerEl      = document.getElementById('quizTimer');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = secs % 60;
+            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+
+        timerDisplay.textContent = formatTime(secondsLeft);
+
+        const timerInterval = setInterval(function () {
+            if (window.__quizSubmitted) { clearInterval(timerInterval); return; }
+
+            secondsLeft--;
+            timerDisplay.textContent = formatTime(Math.max(secondsLeft, 0));
+
+            // colour states
+            const pct = secondsLeft / TIME_LIMIT;
+            timerEl.classList.toggle('warn',   pct <= 0.33 && pct > 0.15);
+            timerEl.classList.toggle('urgent', pct <= 0.15);
+
+            if (secondsLeft <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.textContent = '00:00';
+                // auto-submit
+                window.__quizSubmitted = true;
+                submitQuiz();
+            }
+        }, 1000);
+    }
 
     window.addEventListener('beforeunload', function (e) {
         if (!window.__quizSubmitted && countAnswered() > 0) {

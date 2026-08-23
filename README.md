@@ -3,7 +3,7 @@
 # 🧠 Mind Nest
 ### AI-Powered Study Hub
 
-*A Django MVT Web Application with Integrated AI Assistant*
+*A Django MVT Web Application with Integrated AI Assistant & Quiz Engine*
 
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)
@@ -11,7 +11,7 @@
 ![Gemini](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Railway](https://img.shields.io/badge/Deployed_on-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
 
-**🌐 Live Demo:** (https://web-mindnest-ce34e.up.railway.app/)
+**🌐 Live Demo:** https://web-mindnest-ce34e.up.railway.app/
 
 </div>
 
@@ -19,7 +19,7 @@
 
 ## 📖 Overview
 
-**Mind Nest** is a full-featured web application that helps students organize their study materials, manage tasks, take notes, and save learning resources — all powered by a **personal AI Assistant** that works exclusively on the user's own data (notes, tasks, resources, and uploaded documents).
+**Mind Nest** is a full-featured web application that helps students organize their study materials, manage tasks, take notes, save learning resources, and test themselves — all powered by a **personal AI Assistant** that works exclusively on the user's own data (notes, tasks, resources, and uploaded documents).
 
 ---
 
@@ -34,9 +34,43 @@
 | 📁 **Resources** | Save learning links with types, favorites & live search |
 | 🤖 **AI Assistant** | Personal AI that answers based on YOUR data only |
 | 📄 **Document Upload** | Upload PDF, DOCX, TXT files for AI analysis |
+| 🧩 **AI Quiz Engine** | Generate quizzes from your notes/documents with Gemini AI |
 | 🌙 **Dark Mode** | Toggle between light and dark themes |
 | 📱 **Responsive** | Works on all screen sizes |
 | 🔢 **Pagination** | All list pages paginated |
+
+---
+
+## 🧩 Quiz Feature
+
+The Quiz Engine lets you **generate, take, and track quizzes** built entirely from your own study data.
+
+### How it works
+
+```
+Your Notes / Documents
+        ↓
+  Gemini AI generates questions
+        ↓
+  Review & save the quiz
+        ↓
+  Take the quiz (one question at a time)
+        ↓
+  See results + review incorrect answers
+```
+
+### Quiz Capabilities
+
+| Capability | Detail |
+|-----------|--------|
+| **AI Generation** | Gemini 2.5 Flash generates questions from your notes/documents |
+| **Question Types** | Multiple Choice (4 options) · True / False |
+| **Difficulty** | Easy · Medium · Hard |
+| **Timer** | Optional countdown timer with auto-submit |
+| **Progress** | One question at a time with dot navigator |
+| **Results** | Score ring, correct/incorrect/skipped review, explanations |
+| **History** | All attempts saved — best score, average score, time taken |
+| **Security** | Server-side scoring, ownership checks, atomic transactions |
 
 ---
 
@@ -91,9 +125,7 @@ The AI Assistant uses **Google Gemini 2.5 Flash** and is designed as a **persona
 
 ---
 
-## 🗄️ Database Design — 11 Tables
-
-The project uses **11 related tables** with One-to-Many and Many-to-Many relationships.
+## 🗄️ Database Design — 15 Tables
 
 | Table | Description |
 |-------|-------------|
@@ -108,6 +140,11 @@ The project uses **11 related tables** with One-to-Many and Many-to-Many relatio
 | `ai_conversation` | AI chat conversations |
 | `ai_message` | Messages in each conversation |
 | `ai_uploadeddocument` | User uploaded documents |
+| `quizzes_quiz` | Quiz metadata |
+| `quizzes_question` | Questions per quiz |
+| `quizzes_answer` | Answers per question |
+| `quizzes_quizattempt` | Attempt record per user |
+| `quizzes_attemptanswer` | Per-question answer in each attempt |
 
 ![ERD](ERD.png)
 
@@ -195,6 +232,11 @@ Mind_Nest/
 ├── notes/                  # Notes, Categories, Tags, PDF Export
 ├── resources/              # Learning Resources
 ├── ai_assistant/           # Gemini AI Chat + Document Upload
+│   └── gemini.py           # Shared Gemini client
+├── quizzes/                # AI Quiz Engine
+│   ├── models.py           # Quiz, Question, Answer, Attempt models
+│   ├── views.py            # Generate, Save, Take, Submit, Results
+│   └── urls.py             # Quiz URL patterns
 ├── templates/              # HTML Templates
 ├── static/                 # CSS, JS, Images
 ├── media/                  # User Uploaded Files
@@ -220,7 +262,6 @@ Mind_Nest/
 ## 📚 Course
 
 **ITI — Django Web Development Course**
-Submission Deadline: August 20, 2026
 
 ---
 

@@ -291,7 +291,10 @@
     </div>
 </div>
 
-<!-- Delete Quiz Confirmation Modal -->
+{% endblock %}
+
+<!-- Delete Quiz Modal — direct body child to avoid stacking context trap -->
+{% block extra_js %}
 <div class="modal fade" id="deleteQuizModal" tabindex="-1">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">

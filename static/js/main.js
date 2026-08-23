@@ -4,6 +4,16 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 
+    // ── Move all modals to <body> ─────────────────────────────
+    // Bootstrap modals must be direct children of <body> to stack
+    // correctly above the backdrop (z-index: 1050 vs 1055).
+    // Any modal nested inside #wrapper would appear behind its own backdrop.
+    document.querySelectorAll('.modal').forEach(function (modal) {
+        if (modal.parentElement !== document.body) {
+            document.body.appendChild(modal);
+        }
+    });
+
     // ── Dark Mode ────────────────────────────────────────────
     const html       = document.documentElement;
     const darkBtn    = document.getElementById('darkModeToggle');

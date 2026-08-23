@@ -151,6 +151,8 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Modals — rendered here so they are direct <body> children (correct Bootstrap stacking) -->
+{% block modals %}{% endblock %}
 <!-- Custom JS -->
 <script src="{% static 'js/main.js' %}"></script>
 {% block extra_js %}{% endblock %}
