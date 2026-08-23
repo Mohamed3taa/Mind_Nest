@@ -155,15 +155,23 @@ The AI Assistant uses **Google Gemini 2.5 Flash** and is designed as a **persona
 <table>
   <tr>
     <td><img src="screenshots/Login page.png" alt="Login" width="400"/></td>
+    <td><img src="screenshots/Register page.png" alt="Register" width="400"/></td>
+  </tr>
+  <tr>
     <td><img src="screenshots/Dashboard.png" alt="Dashboard" width="400"/></td>
-  </tr>
-  <tr>
     <td><img src="screenshots/Study Planner.png" alt="Planner" width="400"/></td>
-    <td><img src="screenshots/Notes.png" alt="Notes" width="400"/></td>
   </tr>
   <tr>
-    <td><img src="screenshots/Resources.png" alt="Resources" width="400"/></td>
-    <td><img src="screenshots/AI Assistant.png" alt="AI" width="400"/></td>
+    <td><img src="screenshots/Notes page.png" alt="Notes" width="400"/></td>
+    <td><img src="screenshots/Resources page.png" alt="Resources" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/AI Assistant.png" alt="AI Assistant" width="400"/></td>
+    <td><img src="screenshots/Quizzes page.png" alt="Quizzes" width="400"/></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/Profile page.png" alt="Profile" width="400"/></td>
+    <td><img src="screenshots/Reset password.png" alt="Reset Password" width="400"/></td>
   </tr>
 </table>
 
