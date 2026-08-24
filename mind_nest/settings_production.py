@@ -30,18 +30,21 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media — Cloudinary (only affects file uploads, not static files)
-CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
-if CLOUDINARY_URL:
-    try:
-        import cloudinary
-        cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-        INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary_storage', 'cloudinary']
-        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-        MEDIA_URL = '/media/'
-    except Exception:
-        MEDIA_URL  = '/media/'
-        MEDIA_ROOT = BASE_DIR / 'media'
+# Media — Cloudinary for persistent file storage
+_cloudinary_url = os.environ.get('CLOUDINARY_URL', '')
+if _cloudinary_url:
+    # Parse cloudinary://key:secret@cloud_name
+    import re
+    match = re.match(r'cloudinary://(\w+):(\S+)@(\S+)', _cloudinary_url)
+    if match:
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': match.group(3),
+            'API_KEY':    match.group(1),
+            'API_SECRET': match.group(2),
+        }
+    INSTALLED_APPS = ['cloudinary_storage'] + list(INSTALLED_APPS) + ['cloudinary']
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    MEDIA_URL = '/media/'
 else:
     MEDIA_URL  = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
