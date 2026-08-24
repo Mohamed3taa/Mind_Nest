@@ -30,10 +30,16 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Media — Cloudinary for production (persists across deploys)
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 if CLOUDINARY_URL:
-    INSTALLED_APPS += ['cloudinary_storage', 'cloudinary']
+    import cloudinary
+    cloudinary.config(cloudinary_url=CLOUDINARY_URL)
+    # Insert before staticfiles
+    INSTALLED_APPS = (
+        [app for app in INSTALLED_APPS if app != 'django.contrib.staticfiles']
+        + ['cloudinary_storage', 'django.contrib.staticfiles', 'cloudinary']
+    )
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    MEDIA_URL = '/media/'
 else:
-    # Fallback to local if CLOUDINARY_URL not set
     MEDIA_URL  = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
 
