@@ -31,14 +31,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 if CLOUDINARY_URL:
     import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
     cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-    # Insert before staticfiles
     INSTALLED_APPS = (
         [app for app in INSTALLED_APPS if app != 'django.contrib.staticfiles']
         + ['cloudinary_storage', 'django.contrib.staticfiles', 'cloudinary']
     )
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-    MEDIA_URL = '/media/'
+    MEDIA_URL = 'https://res.cloudinary.com/' + cloudinary.config().cloud_name + '/'
 else:
     MEDIA_URL  = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
