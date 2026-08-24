@@ -8,11 +8,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // Bootstrap modals must be direct children of <body> to stack
     // correctly above the backdrop (z-index: 1050 vs 1055).
     // Any modal nested inside #wrapper would appear behind its own backdrop.
-    document.querySelectorAll('.modal').forEach(function (modal) {
-        if (modal.parentElement !== document.body) {
-            document.body.appendChild(modal);
-        }
-    });
+    function moveModalsToBody() {
+        document.querySelectorAll('.modal').forEach(function (modal) {
+            if (modal.parentElement !== document.body) {
+                document.body.appendChild(modal);
+            }
+        });
+    }
+    moveModalsToBody();
+
+    // Also catch any modals added dynamically after page load
+    new MutationObserver(moveModalsToBody).observe(
+        document.body,
+        { childList: true, subtree: true }
+    );
 
     // ── Dark Mode ────────────────────────────────────────────
     const html       = document.documentElement;

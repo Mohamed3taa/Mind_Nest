@@ -1,3 +1,5 @@
 [variables]
 MISE_PYTHON_GITHUB_ATTESTATIONS = "false"
 DJANGO_SETTINGS_MODULE = "mind_nest.settings_production"
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
