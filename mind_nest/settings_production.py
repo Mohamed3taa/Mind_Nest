@@ -38,17 +38,14 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Email — use SMTP in production if credentials are set
-_email_user = os.environ.get('EMAIL_HOST_USER', '')
-_email_pass = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER', '')
 
-if _email_user and _email_pass:
-    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST          = 'smtp.gmail.com'
-    EMAIL_PORT          = 587
-    EMAIL_USE_TLS       = True
-    EMAIL_HOST_USER     = _email_user
-    EMAIL_HOST_PASSWORD = _email_pass
-    DEFAULT_FROM_EMAIL  = _email_user
-else:
-    # Fallback: print to logs (visible in Railway logs)
+# Fall back to console if credentials missing
+if not EMAIL_HOST_USER:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
