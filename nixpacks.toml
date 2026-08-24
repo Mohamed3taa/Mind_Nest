@@ -1,3 +1,4 @@
 [variables]
 MISE_PYTHON_GITHUB_ATTESTATIONS = "false"
 DJANGO_SETTINGS_MODULE = "mind_nest.settings_production"
+CLOUDINARY_URL = "cloudinary://936884367462252:H9ctaiwFaP0Pm4IBRBL20zAbbbk@bqgsojjc"
