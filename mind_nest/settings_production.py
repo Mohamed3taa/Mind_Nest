@@ -22,26 +22,21 @@ if DATABASE_URL:
         )
     }
 
-# Static files — WhiteNoise
+# Static files — WhiteNoise serves from staticfiles/
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media — Cloudinary for production (persists across deploys)
+# Media — Cloudinary (only affects file uploads, not static files)
 CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '')
 if CLOUDINARY_URL:
     try:
         import cloudinary
-        import cloudinary.uploader
-        import cloudinary.api
         cloudinary.config(cloudinary_url=CLOUDINARY_URL)
-        INSTALLED_APPS = (
-            [app for app in INSTALLED_APPS if app != 'django.contrib.staticfiles']
-            + ['cloudinary_storage', 'django.contrib.staticfiles', 'cloudinary']
-        )
+        INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary_storage', 'cloudinary']
         DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-        MEDIA_URL = 'https://res.cloudinary.com/' + cloudinary.config().cloud_name + '/'
+        MEDIA_URL = '/media/'
     except Exception:
         MEDIA_URL  = '/media/'
         MEDIA_ROOT = BASE_DIR / 'media'
@@ -56,7 +51,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Email — Resend via django-anymail
-INSTALLED_APPS += ['anymail']
-EMAIL_BACKEND   = 'anymail.backends.resend.EmailBackend'
-ANYMAIL         = {'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', '')}
+INSTALLED_APPS = list(INSTALLED_APPS) + ['anymail']
+EMAIL_BACKEND      = 'anymail.backends.resend.EmailBackend'
+ANYMAIL            = {'RESEND_API_KEY': os.environ.get('RESEND_API_KEY', '')}
 DEFAULT_FROM_EMAIL = 'Mind Nest <onboarding@resend.dev>'
