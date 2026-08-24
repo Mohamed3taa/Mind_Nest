@@ -12,7 +12,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
 ALLOWED_HOSTS = ['*']
 
 # Database — Railway provides DATABASE_URL automatically
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.config(
@@ -21,6 +21,8 @@ if DATABASE_URL:
             ssl_require=True
         )
     }
+else:
+    raise Exception("DATABASE_URL environment variable is not set!")
 
 # Static files — WhiteNoise serves from staticfiles/
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
