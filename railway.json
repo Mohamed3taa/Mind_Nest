@@ -1,10 +1,10 @@
-{
+﻿{
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "python manage.py collectstatic --noinput --clear"
+    "buildCommand": "DJANGO_SETTINGS_MODULE=mind_nest.settings_production python manage.py collectstatic --noinput --clear"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && gunicorn mind_nest.wsgi:application --bind 0.0.0.0:$PORT --log-file -"
+    "startCommand": "DJANGO_SETTINGS_MODULE=mind_nest.settings_production python manage.py migrate && gunicorn mind_nest.wsgi:application --bind 0.0.0.0:$PORT --log-file -"
   }
 }
