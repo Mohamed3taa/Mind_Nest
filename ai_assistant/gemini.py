@@ -7,8 +7,13 @@ only one client instance exists across the whole project.
 """
 import os
 from dotenv import load_dotenv
-from google import genai
 
 load_dotenv()
 
-gemini_client = genai.Client(api_key=os.getenv('AI_API_KEY'))
+_api_key = os.getenv('AI_API_KEY', '')
+
+if _api_key:
+    from google import genai
+    gemini_client = genai.Client(api_key=_api_key)
+else:
+    gemini_client = None
