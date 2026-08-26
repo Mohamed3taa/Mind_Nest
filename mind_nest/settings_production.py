@@ -25,24 +25,40 @@ else:
     raise Exception("DATABASE_URL is not set!")
 
 # Static files — WhiteNoise
-# static/      = source files (in git)
-# staticfiles/ = collectstatic output (built on deploy)
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 STATIC_ROOT      = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media — Cloudinary (for user-uploaded files only, NOT static files)
-# DISABLE_CLOUDINARY=1 is set during collectstatic build step only
+# Media — Cloudinary
+# DISABLE_CLOUDINARY=1 during collectstatic build to avoid 0 files issue
 if not os.environ.get('DISABLE_CLOUDINARY'):
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': 'bqgsojjc',
         'API_KEY':    '936884367462252',
         'API_SECRET': 'H9ctaiwFaP0Pm4IBRBL20zAbbbk',
     }
-    INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary_storage', 'cloudinary']
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary']
+    STORAGES = {
+        'default': {
+            'BACKEND': 'mind_nest.cloudinary_storage.CloudinaryMediaStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
     MEDIA_URL = 'https://res.cloudinary.com/bqgsojjc/'
+else:
+    # Build time — use local storage + whitenoise for static
+    STORAGES = {
+        'default': {
+            'BACKEND': 'django.core.files.storage.FileSystemStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
+    MEDIA_URL  = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Security
 CSRF_TRUSTED_ORIGINS = [
