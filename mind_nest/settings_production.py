@@ -42,7 +42,7 @@ if not os.environ.get('DISABLE_CLOUDINARY'):
     }
     INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary_storage', 'cloudinary']
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'
+    MEDIA_URL = 'https://res.cloudinary.com/bqgsojjc/'
 
 # Security
 CSRF_TRUSTED_ORIGINS = [
