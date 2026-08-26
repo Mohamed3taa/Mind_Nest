@@ -31,13 +31,17 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media — Cloudinary
-# Loaded ONLY at runtime (not during collectstatic build step)
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'bqgsojjc',
     'API_KEY':    '936884367462252',
     'API_SECRET': 'H9ctaiwFaP0Pm4IBRBL20zAbbbk',
 }
-INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary_storage', 'cloudinary']
+# cloudinary_storage MUST come before django.contrib.staticfiles
+_apps = list(INSTALLED_APPS)
+_static_idx = _apps.index('django.contrib.staticfiles')
+_apps.insert(_static_idx, 'cloudinary_storage')
+_apps.append('cloudinary')
+INSTALLED_APPS = _apps
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 
