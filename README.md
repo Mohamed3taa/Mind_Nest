@@ -10,8 +10,9 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini_AI-2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Railway](https://img.shields.io/badge/Deployed_on-Railway-0B0D0E?style=for-the-badge&logo=railway&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-Media_Storage-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)
 
-**🌐 Live Demo:** https://web-mindnest-ce34e.up.railway.app/
+**🌐 Live Demo:** https://web-mindnest-e8c67.up.railway.app/
 
 </div>
 
@@ -27,14 +28,15 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🔐 **Authentication** | Register, Login, Logout, Profile, Password Reset |
-| 📊 **Dashboard** | Stats overview, Charts (Chart.js), Recent activity, Upcoming tasks |
+| 🔐 **Authentication** | Register, Login, Logout, Profile with avatar, Password Reset via email |
+| 📊 **Dashboard** | Stats overview, Charts (Chart.js), Recent activity, Upcoming tasks, Quiz stats |
 | ✅ **Study Planner** | Create tasks with priority, due date, status tracking & AJAX toggle |
 | 📝 **Notes** | Full CRUD with categories, tags, pin, search & PDF export |
 | 📁 **Resources** | Save learning links with types, favorites & live search |
 | 🤖 **AI Assistant** | Personal AI that answers based on YOUR data only |
 | 📄 **Document Upload** | Upload PDF, DOCX, TXT files for AI analysis |
-| 🧩 **AI Quiz Engine** | Generate quizzes from your notes/documents with Gemini AI |
+| 🧩 **AI Quiz Engine** | Generate, take, and track quizzes from your notes/documents |
+| 🖼️ **Profile Avatars** | Upload profile pictures stored on Cloudinary CDN |
 | 🌙 **Dark Mode** | Toggle between light and dark themes |
 | 📱 **Responsive** | Works on all screen sizes |
 | 🔢 **Pagination** | All list pages paginated |
@@ -67,7 +69,7 @@ Your Notes / Documents
 | **Question Types** | Multiple Choice (4 options) · True / False |
 | **Difficulty** | Easy · Medium · Hard |
 | **Timer** | Optional countdown timer with auto-submit |
-| **Progress** | One question at a time with dot navigator |
+| **Progress** | One question at a time with dot navigator & progress bar |
 | **Results** | Score ring, correct/incorrect/skipped review, explanations |
 | **History** | All attempts saved — best score, average score, time taken |
 | **Security** | Server-side scoring, ownership checks, atomic transactions |
@@ -113,11 +115,18 @@ The AI Assistant uses **Google Gemini 2.5 Flash** and is designed as a **persona
 **AI Integration**
 - Google Gemini 2.5 Flash API (`google-genai`)
 
+**Storage & Media**
+- Cloudinary — Profile avatars & uploaded images (CDN)
+- WhiteNoise — Static files serving in production
+
+**Email**
+- Resend — Transactional email (password reset)
+
 **Libraries**
 - `reportlab` — PDF Export
 - `PyPDF2` — PDF text extraction
 - `python-docx` — DOCX text extraction
-- `whitenoise` — Static files in production
+- `django-anymail` — Email service integration
 - `dj-database-url` — Database URL parsing
 
 **Deployment**
@@ -125,12 +134,12 @@ The AI Assistant uses **Google Gemini 2.5 Flash** and is designed as a **persona
 
 ---
 
-## 🗄️ Database Design — 15 Tables
+## 🗄️ Database Design — 16 Tables
 
 | Table | Description |
 |-------|-------------|
 | `auth_user` | Django built-in user |
-| `accounts_profile` | One-to-One with User |
+| `accounts_profile` | One-to-One with User (avatar, bio, phone) |
 | `notes_category` | User's note categories |
 | `notes_tag` | User's note tags |
 | `notes_note` | Notes with M2M tags |
@@ -227,13 +236,27 @@ Open `http://127.0.0.1:8000` in your browser.
 
 ---
 
+## ⚙️ Production Environment Variables (Railway)
+
+| Variable | Description |
+|----------|-------------|
+| `DJANGO_SETTINGS_MODULE` | `mind_nest.settings_production` |
+| `SECRET_KEY` | Django secret key |
+| `DATABASE_URL` | PostgreSQL connection URL |
+| `AI_API_KEY` | Google Gemini API key |
+| `CLOUDINARY_URL` | Cloudinary connection URL |
+| `RESEND_API_KEY` | Resend email service API key |
+
+---
+
 ## 📁 Project Structure
 
 ```
 Mind_Nest/
 ├── mind_nest/              # Project settings & URLs
-│   ├── settings.py         # Development settings
-│   └── settings_production.py  # Production settings (Railway)
+│   ├── settings.py              # Development settings
+│   ├── settings_production.py   # Production settings (Railway)
+│   └── cloudinary_storage.py    # Custom Cloudinary storage backend
 ├── accounts/               # Authentication & Profile
 ├── dashboard/              # Dashboard & Statistics & Charts
 ├── planner/                # Study Planner & Tasks
@@ -246,12 +269,14 @@ Mind_Nest/
 │   ├── views.py            # Generate, Save, Take, Submit, Results
 │   └── urls.py             # Quiz URL patterns
 ├── templates/              # HTML Templates
-├── static/                 # CSS, JS, Images
-├── media/                  # User Uploaded Files
+├── static/                 # CSS, JS, Images (source)
+├── staticfiles/            # Collected static files (production)
+├── media/                  # User Uploaded Files (development)
 ├── screenshots/            # Application Screenshots
 ├── BackUp_DB/              # PostgreSQL Database Backup
 ├── ERD.png                 # Entity Relationship Diagram
-├── Procfile                # Railway deployment
+├── railway.json            # Railway deployment config
+├── Procfile                # Fallback deployment config
 ├── requirements.txt
 └── README.md
 ```
