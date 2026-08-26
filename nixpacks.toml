@@ -1,4 +1,8 @@
+# Legacy Nixpacks config — Railway now uses Railpack (see railway.json).
+# Set these variables in the Railway dashboard under Service → Variables:
+#   DJANGO_SETTINGS_MODULE = mind_nest.settings_production
+#   SECRET_KEY, DATABASE_URL, AI_API_KEY, CLOUDINARY_URL, etc.
+
 [variables]
 MISE_PYTHON_GITHUB_ATTESTATIONS = "false"
 DJANGO_SETTINGS_MODULE = "mind_nest.settings_production"
-CLOUDINARY_URL = "cloudinary://936884367462252:H9ctaiwFaP0Pm4IBRBL20zAbbbk@bqgsojjc"
