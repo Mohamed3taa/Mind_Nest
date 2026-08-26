@@ -25,24 +25,23 @@ else:
     raise Exception("DATABASE_URL is not set!")
 
 # Static files — WhiteNoise
+# static/      = source files (in git)
+# staticfiles/ = collectstatic output (built on deploy)
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT      = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media — Cloudinary
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'bqgsojjc',
-    'API_KEY':    '936884367462252',
-    'API_SECRET': 'H9ctaiwFaP0Pm4IBRBL20zAbbbk',
-}
-# cloudinary_storage MUST come before django.contrib.staticfiles
-_apps = list(INSTALLED_APPS)
-_static_idx = _apps.index('django.contrib.staticfiles')
-_apps.insert(_static_idx, 'cloudinary_storage')
-_apps.append('cloudinary')
-INSTALLED_APPS = _apps
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Media — Cloudinary (for user-uploaded files only, NOT static files)
+# DISABLE_CLOUDINARY=1 is set during collectstatic build step only
+if not os.environ.get('DISABLE_CLOUDINARY'):
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': 'bqgsojjc',
+        'API_KEY':    '936884367462252',
+        'API_SECRET': 'H9ctaiwFaP0Pm4IBRBL20zAbbbk',
+    }
+    INSTALLED_APPS = list(INSTALLED_APPS) + ['cloudinary_storage', 'cloudinary']
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 
 # Security
