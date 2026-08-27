@@ -1,5 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
+
+# Documents use local storage — they only need text extraction,
+# not CDN hosting. This prevents Cloudinary from intercepting them.
+_doc_storage = FileSystemStorage()
 
 
 class AIConversation(models.Model):
@@ -42,7 +47,7 @@ class UploadedDocument(models.Model):
 
     user           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
     title          = models.CharField(max_length=200)
-    file           = models.FileField(upload_to='ai_documents/')
+    file           = models.FileField(upload_to='ai_documents/', storage=_doc_storage)
     doc_type       = models.CharField(max_length=10, choices=DocType.choices)
     extracted_text = models.TextField(blank=True)
     uploaded_at    = models.DateTimeField(auto_now_add=True)
